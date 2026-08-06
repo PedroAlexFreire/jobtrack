@@ -3,6 +3,8 @@ package com.jobtrack.jobtrack.controller;
 import com.jobtrack.jobtrack.model.JobApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,5 +26,10 @@ public class JobApplicationController {
     @GetMapping("/api/applications")
     public List<JobApplication> getAllApplications() {
         return this.applications;
+    }
+    @PostMapping("/api/applications")
+    public JobApplication addApplication(@RequestBody JobApplication application) {
+        this.applications.add(application);
+        return application;
     }
 }
