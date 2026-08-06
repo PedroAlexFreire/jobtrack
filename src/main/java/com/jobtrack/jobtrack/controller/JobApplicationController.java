@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,18 @@ public class JobApplicationController {
             }
         }
 
+        return ResponseEntity.notFound().build();
+    }
+    @DeleteMapping("/api/applications/{id}")
+    public ResponseEntity<Void> deleteApplication(@PathVariable Long id) {
+        for (int i = 0; i < this.applications.size(); i++) {
+            JobApplication application = this.applications.get(i);
+
+            if (application.getId().equals(id)) {
+                this.applications.remove(i);
+                    return ResponseEntity.noContent().build();
+            }
+        }
         return ResponseEntity.notFound().build();
     }
 }
