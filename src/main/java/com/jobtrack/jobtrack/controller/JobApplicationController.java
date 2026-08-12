@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import java.util.List;
 
 @RestController
@@ -50,5 +51,18 @@ public class JobApplicationController {
         }
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/api/applications/{id}")
+    public ResponseEntity<JobApplication> updateApplication(
+            @PathVariable Long id,
+            @RequestBody JobApplication updatedApplication) {
+        JobApplication result = this.service.updateApplication(id, updatedApplication);
+
+        if (result == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(result);
     }
 }

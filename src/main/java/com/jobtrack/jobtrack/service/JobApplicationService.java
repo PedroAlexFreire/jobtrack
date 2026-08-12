@@ -15,12 +15,10 @@ public class JobApplicationService {
         this.applications = new ArrayList<>();
 
         this.applications.add(
-            new JobApplication(1L, "Microsoft", "Junior Java Developer", "APPLIED")
-        );
+                new JobApplication(1L, "Microsoft", "Junior Java Developer", "APPLIED"));
 
         this.applications.add(
-            new JobApplication(2L, "Spotify", "Backend Developer", "INTERVIEW")
-        );
+                new JobApplication(2L, "Spotify", "Backend Developer", "INTERVIEW"));
     }
 
     public List<JobApplication> getAllApplications() {
@@ -53,5 +51,21 @@ public class JobApplicationService {
         }
 
         return false;
+    }
+
+    public JobApplication updateApplication(
+            Long id,
+            JobApplication updatedApplication) {
+        JobApplication existingApplication = this.getApplicationById(id);
+
+        if (existingApplication == null) {
+            return null;
+        }
+
+        existingApplication.setCompany(updatedApplication.getCompany());
+        existingApplication.setPosition(updatedApplication.getPosition());
+        existingApplication.setStatus(updatedApplication.getStatus());
+
+        return existingApplication;
     }
 }
