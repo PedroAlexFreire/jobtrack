@@ -10,6 +10,7 @@ import java.util.List;
 public class JobApplicationService {
 
     private final List<JobApplication> applications;
+    private Long nextId;
 
     public JobApplicationService() {
         this.applications = new ArrayList<>();
@@ -19,6 +20,8 @@ public class JobApplicationService {
 
         this.applications.add(
                 new JobApplication(2L, "Spotify", "Backend Developer", "INTERVIEW"));
+
+        this.nextId = 3L;
     }
 
     public List<JobApplication> getAllApplications() {
@@ -26,7 +29,9 @@ public class JobApplicationService {
     }
 
     public JobApplication addApplication(JobApplication application) {
+        application.setId(this.nextId);
         this.applications.add(application);
+        this.nextId++;
         return application;
     }
 

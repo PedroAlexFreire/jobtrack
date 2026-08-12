@@ -40,4 +40,29 @@ class JobApplicationServiceTest {
 
         assertNull(application);
     }
+
+    @Test
+    void addApplicationGeneratesSequentialIds() {
+        JobApplicationService service = new JobApplicationService();
+
+        JobApplication firstApplication = new JobApplication(
+                null,
+                "Blip",
+                "Junior Backend Developer",
+                "APPLIED");
+
+        JobApplication secondApplication = new JobApplication(
+                null,
+                "Critical Software",
+                "Junior Java Developer",
+                "APPLIED");
+
+        JobApplication firstResult = service.addApplication(firstApplication);
+
+        JobApplication secondResult = service.addApplication(secondApplication);
+
+        assertEquals(3L, firstResult.getId());
+        assertEquals(4L, secondResult.getId());
+        assertEquals(4, service.getAllApplications().size());
+    }
 }
