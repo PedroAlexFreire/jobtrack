@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 public class JobApplicationController {
@@ -27,7 +28,7 @@ public class JobApplicationController {
     }
 
     @PostMapping("/api/applications")
-    public JobApplication addApplication(@RequestBody JobApplication application) {
+    public JobApplication addApplication(@Valid @RequestBody JobApplication application) {
         return this.service.addApplication(application);
     }
 
@@ -56,7 +57,7 @@ public class JobApplicationController {
     @PutMapping("/api/applications/{id}")
     public ResponseEntity<JobApplication> updateApplication(
             @PathVariable Long id,
-            @RequestBody JobApplication updatedApplication) {
+            @Valid @RequestBody JobApplication updatedApplication) {
         JobApplication result = this.service.updateApplication(id, updatedApplication);
 
         if (result == null) {

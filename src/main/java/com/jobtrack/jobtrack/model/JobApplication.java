@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "job_applications")
@@ -14,8 +16,11 @@ public class JobApplication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotBlank(message = "Company name is required")
     private String company;
+    @NotBlank(message = "Position is required")
     private String position;
+    @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
 
