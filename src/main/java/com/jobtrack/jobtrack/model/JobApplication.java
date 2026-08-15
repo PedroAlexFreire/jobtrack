@@ -1,26 +1,29 @@
 package com.jobtrack.jobtrack.model;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(name = "job_applications")
-
 public class JobApplication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String company;
     private String position;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus status;
 
     public JobApplication() {
 
     }
 
-    public JobApplication(Long id, String company, String position, String status) {
+    public JobApplication(Long id, String company, String position, ApplicationStatus status) {
         this.id = id;
         this.company = company;
         this.position = position;
@@ -39,7 +42,7 @@ public class JobApplication {
         return this.position;
     }
 
-    public String getStatus() {
+    public ApplicationStatus getStatus() {
         return this.status;
     }
 
@@ -55,7 +58,7 @@ public class JobApplication {
         this.position = position;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ApplicationStatus status) {
         this.status = status;
     }
 }

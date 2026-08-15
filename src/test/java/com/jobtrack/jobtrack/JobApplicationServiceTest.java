@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import com.jobtrack.jobtrack.model.ApplicationStatus;
 
 class JobApplicationServiceTest {
 
@@ -30,13 +31,13 @@ class JobApplicationServiceTest {
                         1L,
                         "Microsoft",
                         "Junior Java Developer",
-                        "APPLIED"
+                        ApplicationStatus.APPLIED
                 ),
                 new JobApplication(
                         2L,
                         "Spotify",
                         "Backend Developer",
-                        "INTERVIEW"
+                        ApplicationStatus.INTERVIEW
                 )
         );
 
@@ -59,7 +60,7 @@ class JobApplicationServiceTest {
                 1L,
                 "Microsoft",
                 "Junior Java Developer",
-                "APPLIED"
+                ApplicationStatus.APPLIED
         );
 
         when(repository.findById(1L))
