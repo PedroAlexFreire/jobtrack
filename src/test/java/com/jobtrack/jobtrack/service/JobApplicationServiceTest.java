@@ -1,4 +1,4 @@
-package com.jobtrack.jobtrack;
+package com.jobtrack.jobtrack.service;
 
 import com.jobtrack.jobtrack.model.JobApplication;
 import com.jobtrack.jobtrack.repository.JobApplicationRepository;
