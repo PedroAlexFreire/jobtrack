@@ -1,67 +1,49 @@
 package com.jobtrack.jobtrack.service;
 
 import com.jobtrack.jobtrack.model.JobApplication;
+import com.jobtrack.jobtrack.repository.JobApplicationRepository;
+
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class JobApplicationService {
 
-    private final List<JobApplication> applications;
-    private Long nextId;
+    private final JobApplicationRepository repository;
 
-    public JobApplicationService() {
-        this.applications = new ArrayList<>();
-
-        this.applications.add(
-                new JobApplication(1L, "Microsoft", "Junior Java Developer", "APPLIED"));
-
-        this.applications.add(
-                new JobApplication(2L, "Spotify", "Backend Developer", "INTERVIEW"));
-
-        this.nextId = 3L;
+    public JobApplicationService(JobApplicationRepository repository) {
+        this.repository = repository;
     }
 
     public List<JobApplication> getAllApplications() {
-        return this.applications;
+        return this.repository.findAll();
     }
 
     public JobApplication addApplication(JobApplication application) {
-        application.setId(this.nextId);
-        this.applications.add(application);
-        this.nextId++;
-        return application;
+        application.setId(null);
+        return this.repository.save(application);
     }
 
     public JobApplication getApplicationById(Long id) {
-        for (JobApplication application : this.applications) {
-            if (application.getId().equals(id)) {
-                return application;
-            }
-        }
-
-        return null;
+        return this.repository.findById(id).orElse(null);
     }
 
     public boolean deleteApplication(Long id) {
-        for (int i = 0; i < this.applications.size(); i++) {
-            JobApplication application = this.applications.get(i);
-
-            if (application.getId().equals(id)) {
-                this.applications.remove(i);
-                return true;
-            }
+        if (!this.repository.existsById(id)) {
+            return false;
         }
 
-        return false;
+        this.repository.deleteById(id);
+        return true;
     }
 
     public JobApplication updateApplication(
             Long id,
-            JobApplication updatedApplication) {
-        JobApplication existingApplication = this.getApplicationById(id);
+            JobApplication updatedApplication
+    ) {
+        JobApplication existingApplication =
+                this.getApplicationById(id);
 
         if (existingApplication == null) {
             return null;
@@ -71,6 +53,6 @@ public class JobApplicationService {
         existingApplication.setPosition(updatedApplication.getPosition());
         existingApplication.setStatus(updatedApplication.getStatus());
 
-        return existingApplication;
+        return this.repository.save(existingApplication);
     }
 }

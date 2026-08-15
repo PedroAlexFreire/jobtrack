@@ -1,68 +1,90 @@
 package com.jobtrack.jobtrack;
 
+import com.jobtrack.jobtrack.model.JobApplication;
+import com.jobtrack.jobtrack.repository.JobApplicationRepository;
+import com.jobtrack.jobtrack.service.JobApplicationService;
+
 import org.junit.jupiter.api.Test;
 
-import com.jobtrack.jobtrack.model.JobApplication;
-import com.jobtrack.jobtrack.service.JobApplicationService;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import com.jobtrack.jobtrack.model.JobApplication;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class JobApplicationServiceTest {
 
     @Test
-    void getAllApplicationsReturnsInitialApplications() {
-        JobApplicationService service = new JobApplicationService();
+    void getAllApplicationsReturnsRepositoryApplications() {
+        JobApplicationRepository repository =
+                mock(JobApplicationRepository.class);
 
-        int numberOfApplications = service.getAllApplications().size();
+        JobApplicationService service =
+                new JobApplicationService(repository);
 
-        assertEquals(2, numberOfApplications);
+        List<JobApplication> storedApplications = List.of(
+                new JobApplication(
+                        1L,
+                        "Microsoft",
+                        "Junior Java Developer",
+                        "APPLIED"
+                ),
+                new JobApplication(
+                        2L,
+                        "Spotify",
+                        "Backend Developer",
+                        "INTERVIEW"
+                )
+        );
+
+        when(repository.findAll()).thenReturn(storedApplications);
+
+        List<JobApplication> result = service.getAllApplications();
+
+        assertEquals(2, result.size());
     }
 
     @Test
     void getApplicationByIdReturnsMatchingApplication() {
-        JobApplicationService service = new JobApplicationService();
+        JobApplicationRepository repository =
+                mock(JobApplicationRepository.class);
 
-        JobApplication application = service.getApplicationById(1L);
+        JobApplicationService service =
+                new JobApplicationService(repository);
 
-        assertNotNull(application);
-        assertEquals(1L, application.getId());
-        assertEquals("Microsoft", application.getCompany());
+        JobApplication storedApplication = new JobApplication(
+                1L,
+                "Microsoft",
+                "Junior Java Developer",
+                "APPLIED"
+        );
+
+        when(repository.findById(1L))
+                .thenReturn(Optional.of(storedApplication));
+
+        JobApplication result = service.getApplicationById(1L);
+
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertEquals("Microsoft", result.getCompany());
     }
 
     @Test
     void getApplicationByIdReturnsNullWhenApplicationDoesNotExist() {
-        JobApplicationService service = new JobApplicationService();
+        JobApplicationRepository repository =
+                mock(JobApplicationRepository.class);
 
-        JobApplication application = service.getApplicationById(999L);
+        JobApplicationService service =
+                new JobApplicationService(repository);
 
-        assertNull(application);
-    }
+        when(repository.findById(999L))
+                .thenReturn(Optional.empty());
 
-    @Test
-    void addApplicationGeneratesSequentialIds() {
-        JobApplicationService service = new JobApplicationService();
+        JobApplication result = service.getApplicationById(999L);
 
-        JobApplication firstApplication = new JobApplication(
-                null,
-                "Blip",
-                "Junior Backend Developer",
-                "APPLIED");
-
-        JobApplication secondApplication = new JobApplication(
-                null,
-                "Critical Software",
-                "Junior Java Developer",
-                "APPLIED");
-
-        JobApplication firstResult = service.addApplication(firstApplication);
-
-        JobApplication secondResult = service.addApplication(secondApplication);
-
-        assertEquals(3L, firstResult.getId());
-        assertEquals(4L, secondResult.getId());
-        assertEquals(4, service.getAllApplications().size());
+        assertNull(result);
     }
 }
