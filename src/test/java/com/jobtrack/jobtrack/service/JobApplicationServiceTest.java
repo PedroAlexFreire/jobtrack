@@ -1,8 +1,9 @@
 package com.jobtrack.jobtrack.service;
 
+import com.jobtrack.jobtrack.model.ApplicationStatus;
 import com.jobtrack.jobtrack.model.JobApplication;
 import com.jobtrack.jobtrack.repository.JobApplicationRepository;
-import com.jobtrack.jobtrack.service.JobApplicationService;
+import com.jobtrack.jobtrack.repository.UserAccountRepository;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,78 +15,86 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import com.jobtrack.jobtrack.model.ApplicationStatus;
 
 class JobApplicationServiceTest {
 
-    @Test
-    void getAllApplicationsReturnsRepositoryApplications() {
-        JobApplicationRepository repository =
-                mock(JobApplicationRepository.class);
+        @Test
+        void getAllApplicationsReturnsRepositoryApplications() {
+                JobApplicationRepository repository = mock(JobApplicationRepository.class);
 
-        JobApplicationService service =
-                new JobApplicationService(repository);
+                UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
-        List<JobApplication> storedApplications = List.of(
-                new JobApplication(
-                        1L,
-                        "Microsoft",
-                        "Junior Java Developer",
-                        ApplicationStatus.APPLIED
-                ),
-                new JobApplication(
-                        2L,
-                        "Spotify",
-                        "Backend Developer",
-                        ApplicationStatus.INTERVIEW
-                )
-        );
+                JobApplicationService service = new JobApplicationService(
+                                repository,
+                                userAccountRepository);
 
-        when(repository.findAll()).thenReturn(storedApplications);
+                List<JobApplication> storedApplications = List.of(
+                                new JobApplication(
+                                                1L,
+                                                "Microsoft",
+                                                "Junior Java Developer",
+                                                ApplicationStatus.APPLIED),
+                                new JobApplication(
+                                                2L,
+                                                "Spotify",
+                                                "Backend Developer",
+                                                ApplicationStatus.INTERVIEW));
 
-        List<JobApplication> result = service.getAllApplications();
+                when(repository.findAllByOwner_Email("pedro@example.com"))
+                                .thenReturn(storedApplications);
 
-        assertEquals(2, result.size());
-    }
+                List<JobApplication> result = service.getAllApplications("pedro@example.com");
 
-    @Test
-    void getApplicationByIdReturnsMatchingApplication() {
-        JobApplicationRepository repository =
-                mock(JobApplicationRepository.class);
+                assertEquals(2, result.size());
+        }
 
-        JobApplicationService service =
-                new JobApplicationService(repository);
+        @Test
+        void getApplicationByIdReturnsMatchingApplication() {
+                JobApplicationRepository repository = mock(JobApplicationRepository.class);
 
-        JobApplication storedApplication = new JobApplication(
-                1L,
-                "Microsoft",
-                "Junior Java Developer",
-                ApplicationStatus.APPLIED
-        );
+                UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
-        when(repository.findById(1L))
-                .thenReturn(Optional.of(storedApplication));
+                JobApplicationService service = new JobApplicationService(
+                                repository,
+                                userAccountRepository);
 
-        JobApplication result = service.getApplicationById(1L);
+                JobApplication storedApplication = new JobApplication(
+                                1L,
+                                "Microsoft",
+                                "Junior Java Developer",
+                                ApplicationStatus.APPLIED);
 
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
-        assertEquals("Microsoft", result.getCompany());
-    }
+                when(repository.findByIdAndOwner_Email(
+                                1L,
+                                "pedro@example.com")).thenReturn(Optional.of(storedApplication));
 
-    @Test
-    void getApplicationByIdReturnsNullWhenApplicationDoesNotExist() {
-        JobApplicationRepository repository =
-                mock(JobApplicationRepository.class);
+                JobApplication result = service.getApplicationById(
+                                1L,
+                                "pedro@example.com");
 
-        JobApplicationService service =
-                new JobApplicationService(repository);
+                assertNotNull(result);
+                assertEquals(1L, result.getId());
+                assertEquals("Microsoft", result.getCompany());
+        }
 
-        when(repository.findById(999L))
-                .thenReturn(Optional.empty());
+        @Test
+        void getApplicationByIdReturnsNullWhenApplicationDoesNotExist() {
+                JobApplicationRepository repository = mock(JobApplicationRepository.class);
 
-        JobApplication result = service.getApplicationById(999L);
+                UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
-        assertNull(result);
-    }
+                JobApplicationService service = new JobApplicationService(
+                                repository,
+                                userAccountRepository);
+
+                when(repository.findByIdAndOwner_Email(
+                                999L,
+                                "pedro@example.com")).thenReturn(Optional.empty());
+
+                JobApplication result = service.getApplicationById(
+                                999L,
+                                "pedro@example.com");
+
+                assertNull(result);
+        }
 }

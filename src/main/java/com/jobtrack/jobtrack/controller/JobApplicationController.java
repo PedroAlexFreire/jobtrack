@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.security.core.Authentication;
 import java.util.List;
 import jakarta.validation.Valid;
 
@@ -23,18 +24,31 @@ public class JobApplicationController {
     }
 
     @GetMapping("/api/applications")
-    public List<JobApplication> getAllApplications() {
-        return this.service.getAllApplications();
+    public List<JobApplication> getAllApplications(
+            Authentication authentication) {
+
+        return this.service.getAllApplications(
+                authentication.getName());
     }
 
     @PostMapping("/api/applications")
-    public JobApplication addApplication(@Valid @RequestBody JobApplication application) {
-        return this.service.addApplication(application);
+    public JobApplication addApplication(
+            @Valid @RequestBody JobApplication application,
+            Authentication authentication) {
+
+        return this.service.addApplication(
+                application,
+                authentication.getName());
     }
 
     @GetMapping("/api/applications/{id}")
-    public ResponseEntity<JobApplication> getApplicationById(@PathVariable Long id) {
-        JobApplication application = this.service.getApplicationById(id);
+    public ResponseEntity<JobApplication> getApplicationById(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        JobApplication application = this.service.getApplicationById(
+                id,
+                authentication.getName());
 
         if (application == null) {
             return ResponseEntity.notFound().build();
@@ -44,8 +58,13 @@ public class JobApplicationController {
     }
 
     @DeleteMapping("/api/applications/{id}")
-    public ResponseEntity<Void> deleteApplication(@PathVariable Long id) {
-        boolean removed = this.service.deleteApplication(id);
+    public ResponseEntity<Void> deleteApplication(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        boolean removed = this.service.deleteApplication(
+                id,
+                authentication.getName());
 
         if (!removed) {
             return ResponseEntity.notFound().build();
@@ -57,8 +76,13 @@ public class JobApplicationController {
     @PutMapping("/api/applications/{id}")
     public ResponseEntity<JobApplication> updateApplication(
             @PathVariable Long id,
-            @Valid @RequestBody JobApplication updatedApplication) {
-        JobApplication result = this.service.updateApplication(id, updatedApplication);
+            @Valid @RequestBody JobApplication updatedApplication,
+            Authentication authentication) {
+
+        JobApplication result = this.service.updateApplication(
+                id,
+                updatedApplication,
+                authentication.getName());
 
         if (result == null) {
             return ResponseEntity.notFound().build();
