@@ -9,6 +9,10 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 @Table(name = "job_applications")
@@ -23,6 +27,10 @@ public class JobApplication {
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserAccount owner;
 
     public JobApplication() {
 
@@ -65,5 +73,13 @@ public class JobApplication {
 
     public void setStatus(ApplicationStatus status) {
         this.status = status;
+    }
+
+    public UserAccount getOwner() {
+        return this.owner;
+    }
+
+    public void setOwner(UserAccount owner) {
+        this.owner = owner;
     }
 }
