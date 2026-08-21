@@ -4,6 +4,7 @@ import com.jobtrack.jobtrack.model.ApplicationStatus;
 import com.jobtrack.jobtrack.model.JobApplication;
 import com.jobtrack.jobtrack.repository.JobApplicationRepository;
 import com.jobtrack.jobtrack.repository.UserAccountRepository;
+import com.jobtrack.jobtrack.dto.JobApplicationResponse;
 
 import org.junit.jupiter.api.Test;
 
@@ -43,9 +44,13 @@ class JobApplicationServiceTest {
                 when(repository.findAllByOwner_Email("pedro@example.com"))
                                 .thenReturn(storedApplications);
 
-                List<JobApplication> result = service.getAllApplications("pedro@example.com");
+                List<JobApplicationResponse> result = service.getAllApplications("pedro@example.com");
 
                 assertEquals(2, result.size());
+                assertEquals(1L, result.get(0).getId());
+                assertEquals("Microsoft", result.get(0).getCompany());
+                assertEquals(2L, result.get(1).getId());
+                assertEquals("Spotify", result.get(1).getCompany());
         }
 
         @Test
@@ -68,7 +73,7 @@ class JobApplicationServiceTest {
                                 1L,
                                 "pedro@example.com")).thenReturn(Optional.of(storedApplication));
 
-                JobApplication result = service.getApplicationById(
+                JobApplicationResponse result = service.getApplicationById(
                                 1L,
                                 "pedro@example.com");
 
@@ -91,7 +96,7 @@ class JobApplicationServiceTest {
                                 999L,
                                 "pedro@example.com")).thenReturn(Optional.empty());
 
-                JobApplication result = service.getApplicationById(
+                JobApplicationResponse result = service.getApplicationById(
                                 999L,
                                 "pedro@example.com");
 

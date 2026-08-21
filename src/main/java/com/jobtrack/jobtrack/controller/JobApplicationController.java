@@ -1,6 +1,6 @@
 package com.jobtrack.jobtrack.controller;
 
-import com.jobtrack.jobtrack.model.JobApplication;
+
 import com.jobtrack.jobtrack.service.JobApplicationService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.security.core.Authentication;
+import com.jobtrack.jobtrack.dto.JobApplicationRequest;
+import com.jobtrack.jobtrack.dto.JobApplicationResponse;
 import java.util.List;
 import jakarta.validation.Valid;
 
@@ -24,7 +26,7 @@ public class JobApplicationController {
     }
 
     @GetMapping("/api/applications")
-    public List<JobApplication> getAllApplications(
+    public List<JobApplicationResponse> getAllApplications(
             Authentication authentication) {
 
         return this.service.getAllApplications(
@@ -32,29 +34,29 @@ public class JobApplicationController {
     }
 
     @PostMapping("/api/applications")
-    public JobApplication addApplication(
-            @Valid @RequestBody JobApplication application,
+    public JobApplicationResponse addApplication(
+            @Valid @RequestBody JobApplicationRequest request,
             Authentication authentication) {
 
         return this.service.addApplication(
-                application,
+                request,
                 authentication.getName());
     }
 
     @GetMapping("/api/applications/{id}")
-    public ResponseEntity<JobApplication> getApplicationById(
+    public ResponseEntity<JobApplicationResponse> getApplicationById(
             @PathVariable Long id,
             Authentication authentication) {
 
-        JobApplication application = this.service.getApplicationById(
+        JobApplicationResponse response = this.service.getApplicationById(
                 id,
                 authentication.getName());
 
-        if (application == null) {
+        if (response == null) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(application);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/api/applications/{id}")
@@ -74,20 +76,20 @@ public class JobApplicationController {
     }
 
     @PutMapping("/api/applications/{id}")
-    public ResponseEntity<JobApplication> updateApplication(
+    public ResponseEntity<JobApplicationResponse> updateApplication(
             @PathVariable Long id,
-            @Valid @RequestBody JobApplication updatedApplication,
+            @Valid @RequestBody JobApplicationRequest request,
             Authentication authentication) {
 
-        JobApplication result = this.service.updateApplication(
+        JobApplicationResponse response = this.service.updateApplication(
                 id,
-                updatedApplication,
+                request,
                 authentication.getName());
 
-        if (result == null) {
+        if (response == null) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(response);
     }
 }
