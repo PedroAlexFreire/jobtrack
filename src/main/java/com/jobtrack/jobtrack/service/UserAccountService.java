@@ -4,9 +4,11 @@ import com.jobtrack.jobtrack.dto.RegisterRequest;
 import com.jobtrack.jobtrack.dto.UserResponse;
 import com.jobtrack.jobtrack.model.UserAccount;
 import com.jobtrack.jobtrack.repository.UserAccountRepository;
+import com.jobtrack.jobtrack.exception.EmailAlreadyExistsException;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 import java.util.Locale;
 
@@ -31,7 +33,7 @@ public class UserAccountService {
                 .toLowerCase(Locale.ROOT);
 
         if (this.repository.existsByEmail(normalizedEmail)) {
-            return null;
+            throw new EmailAlreadyExistsException();
         }
 
         String passwordHash =
