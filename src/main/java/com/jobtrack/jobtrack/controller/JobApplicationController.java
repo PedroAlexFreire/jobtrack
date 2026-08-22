@@ -1,6 +1,5 @@
 package com.jobtrack.jobtrack.controller;
 
-
 import com.jobtrack.jobtrack.service.JobApplicationService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,10 +51,6 @@ public class JobApplicationController {
                 id,
                 authentication.getName());
 
-        if (response == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         return ResponseEntity.ok(response);
     }
 
@@ -64,13 +59,9 @@ public class JobApplicationController {
             @PathVariable Long id,
             Authentication authentication) {
 
-        boolean removed = this.service.deleteApplication(
+        this.service.deleteApplication(
                 id,
                 authentication.getName());
-
-        if (!removed) {
-            return ResponseEntity.notFound().build();
-        }
 
         return ResponseEntity.noContent().build();
     }
@@ -85,10 +76,6 @@ public class JobApplicationController {
                 id,
                 request,
                 authentication.getName());
-
-        if (response == null) {
-            return ResponseEntity.notFound().build();
-        }
 
         return ResponseEntity.ok(response);
     }

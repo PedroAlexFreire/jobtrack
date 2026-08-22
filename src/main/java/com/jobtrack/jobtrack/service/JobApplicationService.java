@@ -6,6 +6,7 @@ import com.jobtrack.jobtrack.model.UserAccount;
 import com.jobtrack.jobtrack.repository.UserAccountRepository;
 import com.jobtrack.jobtrack.dto.JobApplicationRequest;
 import com.jobtrack.jobtrack.dto.JobApplicationResponse;
+import com.jobtrack.jobtrack.exception.JobApplicationNotFoundException;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
@@ -70,25 +71,18 @@ public class JobApplicationService {
                 id,
                 authenticatedEmail);
 
-        if (application == null) {
-            return null;
-        }
-
         return this.toResponse(application);
     }
 
-    public boolean deleteApplication(
+    public void deleteApplication(
             Long id,
             String authenticatedEmail) {
 
-        JobApplication application = this.findOwnedApplication(id, authenticatedEmail);
-
-        if (application == null) {
-            return false;
-        }
+        JobApplication application = this.findOwnedApplication(
+                id,
+                authenticatedEmail);
 
         this.repository.delete(application);
-        return true;
     }
 
     public JobApplicationResponse updateApplication(
@@ -97,9 +91,6 @@ public class JobApplicationService {
             String authenticatedEmail) {
         JobApplication existingApplication = this.findOwnedApplication(id, authenticatedEmail);
 
-        if (existingApplication == null) {
-            return null;
-        }
 
         existingApplication.setCompany(request.getCompany());
         existingApplication.setPosition(request.getPosition());
@@ -118,7 +109,7 @@ public class JobApplicationService {
                 .findByIdAndOwner_Email(
                         id,
                         authenticatedEmail)
-                .orElse(null);
+                .orElseThrow(() -> new JobApplicationNotFoundException(id));
     }
 
     private JobApplicationResponse toResponse(
