@@ -13,59 +13,62 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
 import java.util.Locale;
 
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
-    ) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/health"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .httpBasic(Customizer.withDefaults());
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(
+                                                                SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(authorize -> authorize
+                                                .requestMatchers(
+                                                                "/api/auth/register",
+                                                                "/api/auth/login",
+                                                                "/api/health")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
 
-        return http.build();
-    }
+                                .oauth2ResourceServer(oauth2 -> oauth2
+                                                .jwt(Customizer.withDefaults()));
 
-    @Bean
-    public UserDetailsService userDetailsService(
-            UserAccountRepository repository
-    ) {
-        return username -> {
-            String normalizedEmail = username
-                    .trim()
-                    .toLowerCase(Locale.ROOT);
+                return http.build();
+        }
 
-            UserAccount account = repository
-                    .findByEmail(normalizedEmail)
-                    .orElseThrow(() ->
-                            new UsernameNotFoundException(
-                                    "Invalid credentials"
-                            )
-                    );
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration configuration) throws Exception {
+                return configuration.getAuthenticationManager();
+        }
 
-            UserDetails user = User
-                    .withUsername(account.getEmail())
-                    .password(account.getPasswordHash())
-                    .roles("USER")
-                    .build();
+        @Bean
+        public UserDetailsService userDetailsService(
+                        UserAccountRepository repository) {
+                return username -> {
+                        String normalizedEmail = username
+                                        .trim()
+                                        .toLowerCase(Locale.ROOT);
 
-            return user;
-        };
-    }
+                        UserAccount account = repository
+                                        .findByEmail(normalizedEmail)
+                                        .orElseThrow(() -> new UsernameNotFoundException(
+                                                        "Invalid credentials"));
+
+                        UserDetails user = User
+                                        .withUsername(account.getEmail())
+                                        .password(account.getPasswordHash())
+                                        .roles("USER")
+                                        .build();
+
+                        return user;
+                };
+        }
 }
