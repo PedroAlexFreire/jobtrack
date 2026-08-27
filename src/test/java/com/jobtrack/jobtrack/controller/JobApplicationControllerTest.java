@@ -1,0 +1,86 @@
+package com.jobtrack.jobtrack.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+import com.jobtrack.jobtrack.repository.JobApplicationRepository;
+import com.jobtrack.jobtrack.repository.UserAccountRepository;
+import com.jobtrack.jobtrack.service.JwtService;
+import com.jobtrack.jobtrack.model.ApplicationStatus;
+import com.jobtrack.jobtrack.model.JobApplication;
+import com.jobtrack.jobtrack.model.UserAccount;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class JobApplicationControllerTest {
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+
+    @Autowired
+    private JobApplicationRepository jobApplicationRepository;
+
+    @BeforeEach
+    void cleanDatabase() {
+        this.jobApplicationRepository.deleteAll();
+        this.userAccountRepository.deleteAll();
+    }
+
+    @Test
+    void getAllApplicationsReturnsOnlyAuthenticatedUserApplications() throws Exception {
+        UserAccount pedro = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        UserAccount ana = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Ana",
+                        "ana@example.com",
+                        "{noop}password"));
+        JobApplication pedroApplication = new JobApplication(
+                null,
+                "Microsoft",
+                "Junior Java Developer",
+                ApplicationStatus.APPLIED);
+        pedroApplication.setOwner(pedro);
+        this.jobApplicationRepository.save(pedroApplication);
+
+        JobApplication anaApplication = new JobApplication(
+                null,
+                "Spotify",
+                "Backend Developer",
+                ApplicationStatus.INTERVIEW);
+        anaApplication.setOwner(ana);
+        this.jobApplicationRepository.save(anaApplication);
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        this.mockMvc
+                .perform(get("/api/applications")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].company").value("Microsoft"))
+                .andExpect(jsonPath("$[0].position").value("Junior Java Developer"))
+                .andExpect(jsonPath("$[0].status").value("APPLIED"));
+
+    }
+}
