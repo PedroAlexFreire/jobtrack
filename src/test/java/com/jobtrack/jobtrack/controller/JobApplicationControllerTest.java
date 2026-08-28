@@ -83,10 +83,45 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$[0].status").value("APPLIED"));
 
     }
+
     @Test
     void getAllApplicationsReturnsUnauthorizedWithoutToken() throws Exception {
         this.mockMvc
                 .perform(get("/api/applications"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getApplicationByIdReturnsNotFoundForAnotherUsersApplication() throws Exception {
+        UserAccount pedro = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        UserAccount ana = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Ana",
+                        "ana@example.com",
+                        "{noop}password"));
+
+        JobApplication anaApplication = new JobApplication(
+                null,
+                "Spotify",
+                "Backend Developer",
+                ApplicationStatus.INTERVIEW);
+        anaApplication.setOwner(ana);
+        anaApplication = this.jobApplicationRepository.save(anaApplication);
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        this.mockMvc
+                .perform(get("/api/applications/{id}", anaApplication.getId())
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNotFound());
     }
 }
