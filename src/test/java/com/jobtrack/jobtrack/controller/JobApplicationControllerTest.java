@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import org.springframework.http.MediaType;
 import com.jobtrack.jobtrack.repository.JobApplicationRepository;
@@ -204,5 +205,37 @@ class JobApplicationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void addApplicationReturnsCreatedWhenApplicationIsCreated() throws Exception {
+        this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        String requestBody = """
+                {
+                    "company": "Microsoft",
+                    "position": "Junior Java Developer",
+                    "status": "APPLIED"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/applications")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.company").value("Microsoft"))
+                .andExpect(jsonPath("$.position").value("Junior Java Developer"))
+                .andExpect(jsonPath("$.status").value("APPLIED"));
     }
 }
