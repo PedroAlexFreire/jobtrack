@@ -83,4 +83,10 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$[0].status").value("APPLIED"));
 
     }
+    @Test
+    void getAllApplicationsReturnsUnauthorizedWithoutToken() throws Exception {
+        this.mockMvc
+                .perform(get("/api/applications"))
+                .andExpect(status().isUnauthorized());
+    }
 }
