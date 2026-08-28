@@ -270,4 +270,35 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$.message").value("Validation failed"))
                 .andExpect(jsonPath("$.errors.company").value("Company name is required"));
     }
+
+    @Test
+    void addApplicationReturnsBadRequestWhenStatusIsInvalid() throws Exception {
+        this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        String requestBody = """
+                {
+                    "company": "Microsoft",
+                    "position": "Junior Java Developer",
+                    "status": "UNKNOWN"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/applications")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Malformed or unreadable JSON request"));
+    }
 }
