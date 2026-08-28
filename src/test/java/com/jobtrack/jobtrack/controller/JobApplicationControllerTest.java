@@ -7,6 +7,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 import com.jobtrack.jobtrack.repository.JobApplicationRepository;
 import com.jobtrack.jobtrack.repository.UserAccountRepository;
@@ -121,6 +122,40 @@ class JobApplicationControllerTest {
 
         this.mockMvc
                 .perform(get("/api/applications/{id}", anaApplication.getId())
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteApplicationReturnsNotFoundForAnotherUsersApplication() throws Exception {
+        UserAccount pedro = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        UserAccount ana = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Ana",
+                        "ana@example.com",
+                        "{noop}password"));
+
+        JobApplication anaApplication = new JobApplication(
+                null,
+                "Spotify",
+                "Backend Developer",
+                ApplicationStatus.INTERVIEW);
+        anaApplication.setOwner(ana);
+        anaApplication = this.jobApplicationRepository.save(anaApplication);
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        this.mockMvc
+                .perform(delete("/api/applications/{id}", anaApplication.getId())
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound());
     }
