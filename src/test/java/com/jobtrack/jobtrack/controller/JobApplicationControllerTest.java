@@ -238,4 +238,36 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$.position").value("Junior Java Developer"))
                 .andExpect(jsonPath("$.status").value("APPLIED"));
     }
+
+    @Test
+    void addApplicationReturnsBadRequestWhenCompanyIsBlank() throws Exception {
+        this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        String requestBody = """
+                {
+                    "company": "",
+                    "position": "Junior Java Developer",
+                    "status": "APPLIED"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/applications")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.company").value("Company name is required"));
+    }
 }
