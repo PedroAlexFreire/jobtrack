@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
+import org.springframework.http.MediaType;
 import com.jobtrack.jobtrack.repository.JobApplicationRepository;
 import com.jobtrack.jobtrack.repository.UserAccountRepository;
 import com.jobtrack.jobtrack.service.JwtService;
@@ -157,6 +159,50 @@ class JobApplicationControllerTest {
         this.mockMvc
                 .perform(delete("/api/applications/{id}", anaApplication.getId())
                         .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateApplicationReturnsNotFoundForAnotherUsersApplication() throws Exception {
+        UserAccount pedro = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        UserAccount ana = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Ana",
+                        "ana@example.com",
+                        "{noop}password"));
+
+        JobApplication anaApplication = new JobApplication(
+                null,
+                "Spotify",
+                "Backend Developer",
+                ApplicationStatus.INTERVIEW);
+        anaApplication.setOwner(ana);
+        anaApplication = this.jobApplicationRepository.save(anaApplication);
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        String requestBody = """
+                {
+                    "company": "Changed",
+                    "position": "Changed Role",
+                    "status": "OFFER"
+                }
+                """;
+
+        this.mockMvc
+                .perform(put("/api/applications/{id}", anaApplication.getId())
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
                 .andExpect(status().isNotFound());
     }
 }
