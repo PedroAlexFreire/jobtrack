@@ -73,4 +73,37 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.message").value("An account with this email already exists"));
     }
+
+    @Test
+    void loginReturnsTokenWhenCredentialsAreValid() throws Exception {
+        String registerRequestBody = """
+                {
+                    "name": "Pedro",
+                    "email": "pedro@example.com",
+                    "password": "password123"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerRequestBody))
+                .andExpect(status().isCreated());
+
+        String loginRequestBody = """
+                {
+                    "email": "pedro@example.com",
+                    "password": "password123"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(3600))
+                .andExpect(jsonPath("$.accessToken").isNotEmpty());
+    }
 }
