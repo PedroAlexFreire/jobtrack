@@ -403,6 +403,7 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$.position").value("Junior Java Developer"))
                 .andExpect(jsonPath("$.status").value("APPLIED"));
     }
+
     @Test
     void getApplicationByIdReturnsNotFoundWhenApplicationDoesNotExist() throws Exception {
         this.userAccountRepository.save(
@@ -422,5 +423,46 @@ class JobApplicationControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value("Job application with id 999 was not found"));
+    }
+
+    @Test
+    void addApplicationReturnsUnauthorizedWithoutToken() throws Exception {
+        String requestBody = """
+                {
+                    "company": "Microsoft",
+                    "position": "Junior Java Developer",
+                    "status": "APPLIED"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/applications")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void updateApplicationReturnsUnauthorizedWithoutToken() throws Exception {
+        String requestBody = """
+                {
+                    "company": "Microsoft",
+                    "position": "Backend Developer",
+                    "status": "INTERVIEW"
+                }
+                """;
+
+        this.mockMvc
+                .perform(put("/api/applications/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deleteApplicationReturnsUnauthorizedWithoutToken() throws Exception {
+        this.mockMvc
+                .perform(delete("/api/applications/{id}", 1L))
+                .andExpect(status().isUnauthorized());
     }
 }
