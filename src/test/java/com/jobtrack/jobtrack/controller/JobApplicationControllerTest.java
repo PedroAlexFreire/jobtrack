@@ -18,6 +18,7 @@ import com.jobtrack.jobtrack.service.JwtService;
 import com.jobtrack.jobtrack.model.ApplicationStatus;
 import com.jobtrack.jobtrack.model.JobApplication;
 import com.jobtrack.jobtrack.model.UserAccount;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -300,5 +301,34 @@ class JobApplicationControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Malformed or unreadable JSON request"));
+    }
+
+    @Test
+    void deleteApplicationDeletesOwnedApplication() throws Exception {
+        UserAccount pedro = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        JobApplication pedroApplication = new JobApplication(
+                null,
+                "Microsoft",
+                "Junior Java Developer",
+                ApplicationStatus.APPLIED);
+        pedroApplication.setOwner(pedro);
+        pedroApplication = this.jobApplicationRepository.save(pedroApplication);
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        this.mockMvc
+                .perform(delete("/api/applications/{id}", pedroApplication.getId())
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNoContent());
+
+        assertFalse(this.jobApplicationRepository.existsById(pedroApplication.getId()));
     }
 }
