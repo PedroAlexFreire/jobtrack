@@ -403,4 +403,24 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$.position").value("Junior Java Developer"))
                 .andExpect(jsonPath("$.status").value("APPLIED"));
     }
+    @Test
+    void getApplicationByIdReturnsNotFoundWhenApplicationDoesNotExist() throws Exception {
+        this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        this.mockMvc
+                .perform(get("/api/applications/{id}", 999L)
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Job application with id 999 was not found"));
+    }
 }
