@@ -48,4 +48,29 @@ class AuthControllerTest {
 
         assertTrue(this.userAccountRepository.existsByEmail("pedro@example.com"));
     }
+
+    @Test
+    void registerReturnsConflictWhenEmailAlreadyExists() throws Exception {
+        String requestBody = """
+                {
+                    "name": "Pedro",
+                    "email": "pedro@example.com",
+                    "password": "password123"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated());
+
+        this.mockMvc
+                .perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.message").value("An account with this email already exists"));
+    }
 }
