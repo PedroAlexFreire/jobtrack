@@ -1,26 +1,26 @@
 package com.jobtrack.jobtrack.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-import org.springframework.http.MediaType;
-import com.jobtrack.jobtrack.repository.JobApplicationRepository;
-import com.jobtrack.jobtrack.repository.UserAccountRepository;
-import com.jobtrack.jobtrack.service.JwtService;
 import com.jobtrack.jobtrack.model.ApplicationStatus;
 import com.jobtrack.jobtrack.model.JobApplication;
 import com.jobtrack.jobtrack.model.UserAccount;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import com.jobtrack.jobtrack.repository.JobApplicationRepository;
+import com.jobtrack.jobtrack.repository.UserAccountRepository;
+import com.jobtrack.jobtrack.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,34 +45,20 @@ class JobApplicationControllerTest {
 
     @Test
     void getAllApplicationsReturnsOnlyAuthenticatedUserApplications() throws Exception {
-        UserAccount pedro = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
+        UserAccount ana = this.createUser("Ana", "ana@example.com");
 
-        UserAccount ana = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Ana",
-                        "ana@example.com",
-                        "{noop}password"));
-        JobApplication pedroApplication = new JobApplication(
-                null,
+        this.createApplication(
+                pedro,
                 "Microsoft",
                 "Junior Java Developer",
                 ApplicationStatus.APPLIED);
-        pedroApplication.setOwner(pedro);
-        this.jobApplicationRepository.save(pedroApplication);
 
-        JobApplication anaApplication = new JobApplication(
-                null,
+        this.createApplication(
+                ana,
                 "Spotify",
                 "Backend Developer",
                 ApplicationStatus.INTERVIEW);
-        anaApplication.setOwner(ana);
-        this.jobApplicationRepository.save(anaApplication);
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -86,7 +72,6 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$[0].company").value("Microsoft"))
                 .andExpect(jsonPath("$[0].position").value("Junior Java Developer"))
                 .andExpect(jsonPath("$[0].status").value("APPLIED"));
-
     }
 
     @Test
@@ -98,27 +83,14 @@ class JobApplicationControllerTest {
 
     @Test
     void getApplicationByIdReturnsNotFoundForAnotherUsersApplication() throws Exception {
-        UserAccount pedro = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        this.createUser("Pedro", "pedro@example.com");
+        UserAccount ana = this.createUser("Ana", "ana@example.com");
 
-        UserAccount ana = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Ana",
-                        "ana@example.com",
-                        "{noop}password"));
-
-        JobApplication anaApplication = new JobApplication(
-                null,
+        JobApplication anaApplication = this.createApplication(
+                ana,
                 "Spotify",
                 "Backend Developer",
                 ApplicationStatus.INTERVIEW);
-        anaApplication.setOwner(ana);
-        anaApplication = this.jobApplicationRepository.save(anaApplication);
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -132,27 +104,14 @@ class JobApplicationControllerTest {
 
     @Test
     void deleteApplicationReturnsNotFoundForAnotherUsersApplication() throws Exception {
-        UserAccount pedro = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        this.createUser("Pedro", "pedro@example.com");
+        UserAccount ana = this.createUser("Ana", "ana@example.com");
 
-        UserAccount ana = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Ana",
-                        "ana@example.com",
-                        "{noop}password"));
-
-        JobApplication anaApplication = new JobApplication(
-                null,
+        JobApplication anaApplication = this.createApplication(
+                ana,
                 "Spotify",
                 "Backend Developer",
                 ApplicationStatus.INTERVIEW);
-        anaApplication.setOwner(ana);
-        anaApplication = this.jobApplicationRepository.save(anaApplication);
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -166,27 +125,14 @@ class JobApplicationControllerTest {
 
     @Test
     void updateApplicationReturnsNotFoundForAnotherUsersApplication() throws Exception {
-        UserAccount pedro = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        this.createUser("Pedro", "pedro@example.com");
+        UserAccount ana = this.createUser("Ana", "ana@example.com");
 
-        UserAccount ana = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Ana",
-                        "ana@example.com",
-                        "{noop}password"));
-
-        JobApplication anaApplication = new JobApplication(
-                null,
+        JobApplication anaApplication = this.createApplication(
+                ana,
                 "Spotify",
                 "Backend Developer",
                 ApplicationStatus.INTERVIEW);
-        anaApplication.setOwner(ana);
-        anaApplication = this.jobApplicationRepository.save(anaApplication);
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -210,12 +156,7 @@ class JobApplicationControllerTest {
 
     @Test
     void addApplicationReturnsCreatedWhenApplicationIsCreated() throws Exception {
-        this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        this.createUser("Pedro", "pedro@example.com");
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -242,12 +183,7 @@ class JobApplicationControllerTest {
 
     @Test
     void addApplicationReturnsBadRequestWhenCompanyIsBlank() throws Exception {
-        this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        this.createUser("Pedro", "pedro@example.com");
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -274,12 +210,7 @@ class JobApplicationControllerTest {
 
     @Test
     void addApplicationReturnsBadRequestWhenStatusIsInvalid() throws Exception {
-        this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        this.createUser("Pedro", "pedro@example.com");
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -305,20 +236,13 @@ class JobApplicationControllerTest {
 
     @Test
     void deleteApplicationDeletesOwnedApplication() throws Exception {
-        UserAccount pedro = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
 
-        JobApplication pedroApplication = new JobApplication(
-                null,
+        JobApplication pedroApplication = this.createApplication(
+                pedro,
                 "Microsoft",
                 "Junior Java Developer",
                 ApplicationStatus.APPLIED);
-        pedroApplication.setOwner(pedro);
-        pedroApplication = this.jobApplicationRepository.save(pedroApplication);
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -334,20 +258,13 @@ class JobApplicationControllerTest {
 
     @Test
     void updateApplicationUpdatesOwnedApplication() throws Exception {
-        UserAccount pedro = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
 
-        JobApplication pedroApplication = new JobApplication(
-                null,
+        JobApplication pedroApplication = this.createApplication(
+                pedro,
                 "Microsoft",
                 "Junior Java Developer",
                 ApplicationStatus.APPLIED);
-        pedroApplication.setOwner(pedro);
-        pedroApplication = this.jobApplicationRepository.save(pedroApplication);
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -375,20 +292,13 @@ class JobApplicationControllerTest {
 
     @Test
     void getApplicationByIdReturnsOwnedApplication() throws Exception {
-        UserAccount pedro = this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
 
-        JobApplication pedroApplication = new JobApplication(
-                null,
+        JobApplication pedroApplication = this.createApplication(
+                pedro,
                 "Microsoft",
                 "Junior Java Developer",
                 ApplicationStatus.APPLIED);
-        pedroApplication.setOwner(pedro);
-        pedroApplication = this.jobApplicationRepository.save(pedroApplication);
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -406,12 +316,7 @@ class JobApplicationControllerTest {
 
     @Test
     void getApplicationByIdReturnsNotFoundWhenApplicationDoesNotExist() throws Exception {
-        this.userAccountRepository.save(
-                new UserAccount(
-                        null,
-                        "Pedro",
-                        "pedro@example.com",
-                        "{noop}password"));
+        this.createUser("Pedro", "pedro@example.com");
 
         String accessToken = this.jwtService
                 .generateToken("pedro@example.com")
@@ -464,5 +369,32 @@ class JobApplicationControllerTest {
         this.mockMvc
                 .perform(delete("/api/applications/{id}", 1L))
                 .andExpect(status().isUnauthorized());
+    }
+
+    private UserAccount createUser(
+            String name,
+            String email) {
+        return this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        name,
+                        email,
+                        "{noop}password"));
+    }
+
+    private JobApplication createApplication(
+            UserAccount owner,
+            String company,
+            String position,
+            ApplicationStatus status) {
+        JobApplication application = new JobApplication(
+                null,
+                company,
+                position,
+                status);
+
+        application.setOwner(owner);
+
+        return this.jobApplicationRepository.save(application);
     }
 }
