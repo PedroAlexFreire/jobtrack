@@ -372,4 +372,35 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$.position").value("Backend Developer"))
                 .andExpect(jsonPath("$.status").value("INTERVIEW"));
     }
+
+    @Test
+    void getApplicationByIdReturnsOwnedApplication() throws Exception {
+        UserAccount pedro = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        JobApplication pedroApplication = new JobApplication(
+                null,
+                "Microsoft",
+                "Junior Java Developer",
+                ApplicationStatus.APPLIED);
+        pedroApplication.setOwner(pedro);
+        pedroApplication = this.jobApplicationRepository.save(pedroApplication);
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        this.mockMvc
+                .perform(get("/api/applications/{id}", pedroApplication.getId())
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(pedroApplication.getId()))
+                .andExpect(jsonPath("$.company").value("Microsoft"))
+                .andExpect(jsonPath("$.position").value("Junior Java Developer"))
+                .andExpect(jsonPath("$.status").value("APPLIED"));
+    }
 }
