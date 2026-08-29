@@ -331,4 +331,45 @@ class JobApplicationControllerTest {
 
         assertFalse(this.jobApplicationRepository.existsById(pedroApplication.getId()));
     }
+
+    @Test
+    void updateApplicationUpdatesOwnedApplication() throws Exception {
+        UserAccount pedro = this.userAccountRepository.save(
+                new UserAccount(
+                        null,
+                        "Pedro",
+                        "pedro@example.com",
+                        "{noop}password"));
+
+        JobApplication pedroApplication = new JobApplication(
+                null,
+                "Microsoft",
+                "Junior Java Developer",
+                ApplicationStatus.APPLIED);
+        pedroApplication.setOwner(pedro);
+        pedroApplication = this.jobApplicationRepository.save(pedroApplication);
+
+        String accessToken = this.jwtService
+                .generateToken("pedro@example.com")
+                .getAccessToken();
+
+        String requestBody = """
+                {
+                    "company": "Microsoft",
+                    "position": "Backend Developer",
+                    "status": "INTERVIEW"
+                }
+                """;
+
+        this.mockMvc
+                .perform(put("/api/applications/{id}", pedroApplication.getId())
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(pedroApplication.getId()))
+                .andExpect(jsonPath("$.company").value("Microsoft"))
+                .andExpect(jsonPath("$.position").value("Backend Developer"))
+                .andExpect(jsonPath("$.status").value("INTERVIEW"));
+    }
 }
