@@ -228,12 +228,11 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerReturnsBadRequestWhenPasswordIsBlank() throws Exception {
+    void registerReturnsBadRequestWhenPasswordIsMissing() throws Exception {
         String requestBody = """
                 {
                     "name": "Pedro",
-                    "email": "pedro@example.com",
-                    "password": ""
+                    "email": "pedro@example.com"
                 }
                 """;
 
