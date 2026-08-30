@@ -207,6 +207,26 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.errors.name").value("Name is required"));
     }
 
+    @Test
+    void registerReturnsBadRequestWhenEmailIsBlank() throws Exception {
+        String requestBody = """
+                {
+                    "name": "Pedro",
+                    "email": "",
+                    "password": "password123"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.email").value("Email is required"));
+    }
+
     private void registerUser(
             String name,
             String email,
