@@ -285,6 +285,26 @@ class AuthControllerTest {
         assertTrue(this.userAccountRepository.existsByEmail("pedro@example.com"));
     }
 
+    @Test
+    void loginNormalizesEmailBeforeAuthentication() throws Exception {
+        this.registerUser("Pedro", "pedro@example.com", "password123");
+
+        String loginRequestBody = """
+                {
+                    "email": "Pedro@Example.COM",
+                    "password": "password123"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.accessToken").isNotEmpty());
+    }
+
     private void registerUser(
             String name,
             String email,
