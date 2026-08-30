@@ -6,15 +6,15 @@ import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
 
-    @NotBlank
+    @NotBlank(message = "Name is required")
     private String name;
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
     private String email;
 
-    @NotBlank
-    @Size(min = 8)
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must have at least 8 characters")
     private String password;
 
     public RegisterRequest() {
@@ -23,8 +23,7 @@ public class RegisterRequest {
     public RegisterRequest(
             String name,
             String email,
-            String password
-    ) {
+            String password) {
         this.name = name;
         this.email = email;
         this.password = password;

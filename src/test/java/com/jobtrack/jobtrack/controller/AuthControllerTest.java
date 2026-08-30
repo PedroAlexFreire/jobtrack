@@ -126,7 +126,7 @@ class AuthControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
-                .andExpect(jsonPath("$.errors.password").value("size must be between 8 and 2147483647"));
+                .andExpect(jsonPath("$.errors.password").value("Password must have at least 8 characters"));
     }
 
     @Test
@@ -146,7 +146,7 @@ class AuthControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
-                .andExpect(jsonPath("$.errors.email").value("must be a well-formed email address"));
+                .andExpect(jsonPath("$.errors.email").value("Email must be valid"));
     }
 
     @Test
@@ -204,7 +204,7 @@ class AuthControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
-                .andExpect(jsonPath("$.errors.name").value("must not be blank"));
+                .andExpect(jsonPath("$.errors.name").value("Name is required"));
     }
 
     private void registerUser(
