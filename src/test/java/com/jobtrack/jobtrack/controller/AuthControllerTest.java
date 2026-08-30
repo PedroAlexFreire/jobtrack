@@ -136,4 +136,24 @@ class AuthControllerTest {
                         .content(loginRequestBody))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void registerReturnsBadRequestWhenPasswordIsTooShort() throws Exception {
+        String requestBody = """
+                {
+                    "name": "Pedro",
+                    "email": "pedro@example.com",
+                    "password": "short"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.password").value("size must be between 8 and 2147483647"));
+    }
 }
