@@ -243,6 +243,33 @@ class JobApplicationControllerTest {
         }
 
         @Test
+        void addApplicationReturnsBadRequestWhenApplicationDateFormatIsInvalid() throws Exception {
+                this.createUser("Pedro", "pedro@example.com");
+
+                String accessToken = this.jwtService
+                                .generateToken("pedro@example.com")
+                                .getAccessToken();
+
+                String requestBody = """
+                                {
+                                    "company": "Microsoft",
+                                    "position": "Junior Java Developer",
+                                    "status": "APPLIED",
+                                    "applicationDate": "30-08-2026"
+                                }
+                                """;
+
+                this.mockMvc
+                                .perform(post("/api/applications")
+                                                .header("Authorization", "Bearer " + accessToken)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(requestBody))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.message").value("Malformed or unreadable JSON request"));
+        }
+
+        @Test
         void addApplicationReturnsBadRequestWhenStatusIsInvalid() throws Exception {
                 this.createUser("Pedro", "pedro@example.com");
 
