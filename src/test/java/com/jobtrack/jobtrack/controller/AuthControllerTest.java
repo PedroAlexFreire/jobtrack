@@ -106,4 +106,34 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.expiresIn").value(3600))
                 .andExpect(jsonPath("$.accessToken").isNotEmpty());
     }
+
+    @Test
+    void loginReturnsUnauthorizedWhenPasswordIsInvalid() throws Exception {
+        String registerRequestBody = """
+                {
+                    "name": "Pedro",
+                    "email": "pedro@example.com",
+                    "password": "password123"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerRequestBody))
+                .andExpect(status().isCreated());
+
+        String loginRequestBody = """
+                {
+                    "email": "pedro@example.com",
+                    "password": "wrong-password"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequestBody))
+                .andExpect(status().isUnauthorized());
+    }
 }
