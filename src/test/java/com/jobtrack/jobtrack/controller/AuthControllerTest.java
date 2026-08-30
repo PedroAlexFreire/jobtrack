@@ -176,4 +176,23 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message").value("Validation failed"))
                 .andExpect(jsonPath("$.errors.email").value("must be a well-formed email address"));
     }
+
+    @Test
+    void loginReturnsBadRequestWhenEmailIsInvalid() throws Exception {
+        String requestBody = """
+                {
+                    "email": "not-an-email",
+                    "password": "password123"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.email").value("Email must be valid"));
+    }
 }
