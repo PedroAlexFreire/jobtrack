@@ -265,6 +265,26 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.errors.email").value("Email is required"));
     }
 
+    @Test
+    void registerNormalizesEmailBeforeCreatingUser() throws Exception {
+        String requestBody = """
+                {
+                    "name": "Pedro",
+                    "email": "Pedro@Example.COM",
+                    "password": "password123"
+                }
+                """;
+
+        this.mockMvc
+                .perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value("pedro@example.com"));
+
+        assertTrue(this.userAccountRepository.existsByEmail("pedro@example.com"));
+    }
+
     private void registerUser(
             String name,
             String email,
