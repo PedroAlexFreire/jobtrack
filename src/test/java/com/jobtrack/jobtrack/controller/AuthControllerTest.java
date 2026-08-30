@@ -51,6 +51,8 @@ class AuthControllerTest {
 
     @Test
     void registerReturnsConflictWhenEmailAlreadyExists() throws Exception {
+        this.registerUser("Pedro", "pedro@example.com", "password123");
+
         String requestBody = """
                 {
                     "name": "Pedro",
@@ -63,12 +65,6 @@ class AuthControllerTest {
                 .perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isCreated());
-
-        this.mockMvc
-                .perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.message").value("An account with this email already exists"));
@@ -76,19 +72,7 @@ class AuthControllerTest {
 
     @Test
     void loginReturnsTokenWhenCredentialsAreValid() throws Exception {
-        String registerRequestBody = """
-                {
-                    "name": "Pedro",
-                    "email": "pedro@example.com",
-                    "password": "password123"
-                }
-                """;
-
-        this.mockMvc
-                .perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestBody))
-                .andExpect(status().isCreated());
+        this.registerUser("Pedro", "pedro@example.com", "password123");
 
         String loginRequestBody = """
                 {
@@ -109,19 +93,7 @@ class AuthControllerTest {
 
     @Test
     void loginReturnsUnauthorizedWhenPasswordIsInvalid() throws Exception {
-        String registerRequestBody = """
-                {
-                    "name": "Pedro",
-                    "email": "pedro@example.com",
-                    "password": "password123"
-                }
-                """;
-
-        this.mockMvc
-                .perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestBody))
-                .andExpect(status().isCreated());
+        this.registerUser("Pedro", "pedro@example.com", "password123");
 
         String loginRequestBody = """
                 {
@@ -194,5 +166,24 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Validation failed"))
                 .andExpect(jsonPath("$.errors.email").value("Email must be valid"));
+    }
+
+    private void registerUser(
+            String name,
+            String email,
+            String password) throws Exception {
+        String requestBody = """
+                {
+                    "name": "%s",
+                    "email": "%s",
+                    "password": "%s"
+                }
+                """.formatted(name, email, password);
+
+        this.mockMvc
+                .perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated());
     }
 }
