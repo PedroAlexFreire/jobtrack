@@ -13,6 +13,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "job_applications")
 public class JobApplication {
@@ -26,6 +28,8 @@ public class JobApplication {
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
+    @NotNull(message = "Application date is required")
+    private LocalDate applicationDate;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserAccount owner;
@@ -34,11 +38,17 @@ public class JobApplication {
 
     }
 
-    public JobApplication(Long id, String company, String position, ApplicationStatus status) {
+    public JobApplication(
+            Long id,
+            String company,
+            String position,
+            ApplicationStatus status,
+            LocalDate applicationDate) {
         this.id = id;
         this.company = company;
         this.position = position;
         this.status = status;
+        this.applicationDate = applicationDate;
     }
 
     public Long getId() {
@@ -79,5 +89,13 @@ public class JobApplication {
 
     public void setOwner(UserAccount owner) {
         this.owner = owner;
+    }
+
+    public LocalDate getApplicationDate() {
+        return this.applicationDate;
+    }
+
+    public void setApplicationDate(LocalDate applicationDate) {
+        this.applicationDate = applicationDate;
     }
 }

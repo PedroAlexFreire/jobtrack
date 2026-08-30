@@ -1,33 +1,32 @@
 package com.jobtrack.jobtrack.service;
 
+import com.jobtrack.jobtrack.dto.JobApplicationRequest;
+import com.jobtrack.jobtrack.dto.JobApplicationResponse;
+import com.jobtrack.jobtrack.exception.JobApplicationNotFoundException;
 import com.jobtrack.jobtrack.model.ApplicationStatus;
 import com.jobtrack.jobtrack.model.JobApplication;
 import com.jobtrack.jobtrack.repository.JobApplicationRepository;
 import com.jobtrack.jobtrack.repository.UserAccountRepository;
-import com.jobtrack.jobtrack.dto.JobApplicationResponse;
-import com.jobtrack.jobtrack.exception.JobApplicationNotFoundException;
-import com.jobtrack.jobtrack.dto.JobApplicationRequest;
-
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class JobApplicationServiceTest {
 
         @Test
         void getAllApplicationsReturnsRepositoryApplications() {
                 JobApplicationRepository repository = mock(JobApplicationRepository.class);
-
                 UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
                 JobApplicationService service = new JobApplicationService(
@@ -39,12 +38,14 @@ class JobApplicationServiceTest {
                                                 1L,
                                                 "Microsoft",
                                                 "Junior Java Developer",
-                                                ApplicationStatus.APPLIED),
+                                                ApplicationStatus.APPLIED,
+                                                LocalDate.parse("2026-08-30")),
                                 new JobApplication(
                                                 2L,
                                                 "Spotify",
                                                 "Backend Developer",
-                                                ApplicationStatus.INTERVIEW));
+                                                ApplicationStatus.INTERVIEW,
+                                                LocalDate.parse("2026-08-31")));
 
                 when(repository.findAllByOwner_Email("pedro@example.com"))
                                 .thenReturn(storedApplications);
@@ -54,14 +55,15 @@ class JobApplicationServiceTest {
                 assertEquals(2, result.size());
                 assertEquals(1L, result.get(0).getId());
                 assertEquals("Microsoft", result.get(0).getCompany());
+                assertEquals(LocalDate.parse("2026-08-30"), result.get(0).getApplicationDate());
                 assertEquals(2L, result.get(1).getId());
                 assertEquals("Spotify", result.get(1).getCompany());
+                assertEquals(LocalDate.parse("2026-08-31"), result.get(1).getApplicationDate());
         }
 
         @Test
         void getApplicationByIdReturnsMatchingApplication() {
                 JobApplicationRepository repository = mock(JobApplicationRepository.class);
-
                 UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
                 JobApplicationService service = new JobApplicationService(
@@ -72,7 +74,8 @@ class JobApplicationServiceTest {
                                 1L,
                                 "Microsoft",
                                 "Junior Java Developer",
-                                ApplicationStatus.APPLIED);
+                                ApplicationStatus.APPLIED,
+                                LocalDate.parse("2026-08-30"));
 
                 when(repository.findByIdAndOwner_Email(
                                 1L,
@@ -85,12 +88,12 @@ class JobApplicationServiceTest {
                 assertNotNull(result);
                 assertEquals(1L, result.getId());
                 assertEquals("Microsoft", result.getCompany());
+                assertEquals(LocalDate.parse("2026-08-30"), result.getApplicationDate());
         }
 
         @Test
         void getApplicationByIdThrowsExceptionWhenApplicationDoesNotExist() {
                 JobApplicationRepository repository = mock(JobApplicationRepository.class);
-
                 UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
                 JobApplicationService service = new JobApplicationService(
@@ -115,7 +118,6 @@ class JobApplicationServiceTest {
         @Test
         void updateApplicationUpdatesAndReturnsApplication() {
                 JobApplicationRepository repository = mock(JobApplicationRepository.class);
-
                 UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
                 JobApplicationService service = new JobApplicationService(
@@ -126,12 +128,14 @@ class JobApplicationServiceTest {
                                 1L,
                                 "Microsoft",
                                 "Junior Java Developer",
-                                ApplicationStatus.APPLIED);
+                                ApplicationStatus.APPLIED,
+                                LocalDate.parse("2026-08-30"));
 
                 JobApplicationRequest request = new JobApplicationRequest(
                                 "Microsoft",
                                 "Backend Developer",
-                                ApplicationStatus.INTERVIEW);
+                                ApplicationStatus.INTERVIEW,
+                                LocalDate.parse("2026-09-01"));
 
                 when(repository.findByIdAndOwner_Email(
                                 1L,
@@ -151,15 +155,14 @@ class JobApplicationServiceTest {
                 assertEquals(
                                 ApplicationStatus.INTERVIEW,
                                 result.getStatus());
+                assertEquals(LocalDate.parse("2026-09-01"), result.getApplicationDate());
 
                 verify(repository).save(storedApplication);
-
         }
 
         @Test
         void deleteApplicationDeletesOwnedApplication() {
                 JobApplicationRepository repository = mock(JobApplicationRepository.class);
-
                 UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
                 JobApplicationService service = new JobApplicationService(
@@ -170,7 +173,8 @@ class JobApplicationServiceTest {
                                 1L,
                                 "Microsoft",
                                 "Junior Java Developer",
-                                ApplicationStatus.APPLIED);
+                                ApplicationStatus.APPLIED,
+                                LocalDate.parse("2026-08-30"));
 
                 when(repository.findByIdAndOwner_Email(
                                 1L,
@@ -186,7 +190,6 @@ class JobApplicationServiceTest {
         @Test
         void deleteApplicationDoesNotDeleteWhenApplicationIsNotOwned() {
                 JobApplicationRepository repository = mock(JobApplicationRepository.class);
-
                 UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
 
                 JobApplicationService service = new JobApplicationService(

@@ -1,5 +1,7 @@
 package com.jobtrack.jobtrack.dto;
 
+import java.time.LocalDate;
+
 import com.jobtrack.jobtrack.model.ApplicationStatus;
 
 import jakarta.validation.constraints.NotBlank;
@@ -22,11 +24,12 @@ public class JobApplicationRequest {
     public JobApplicationRequest(
             String company,
             String position,
-            ApplicationStatus status
-    ) {
+            ApplicationStatus status,
+            LocalDate applicationDate) {
         this.company = company;
         this.position = position;
         this.status = status;
+        this.applicationDate = applicationDate;
     }
 
     public String getCompany() {
@@ -52,4 +55,15 @@ public class JobApplicationRequest {
     public void setStatus(ApplicationStatus status) {
         this.status = status;
     }
+
+    public LocalDate getApplicationDate() {
+        return this.applicationDate;
+    }
+
+    public void setApplicationDate(LocalDate applicationDate) {
+        this.applicationDate = applicationDate;
+    }
+
+    @NotNull(message = "Application date is required")
+    private LocalDate applicationDate;
 }

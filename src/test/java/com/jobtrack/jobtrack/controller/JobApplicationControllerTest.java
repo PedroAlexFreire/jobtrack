@@ -14,6 +14,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -71,7 +73,8 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].company").value("Microsoft"))
                 .andExpect(jsonPath("$[0].position").value("Junior Java Developer"))
-                .andExpect(jsonPath("$[0].status").value("APPLIED"));
+                .andExpect(jsonPath("$[0].status").value("APPLIED"))
+                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-30"));
     }
 
     @Test
@@ -142,7 +145,8 @@ class JobApplicationControllerTest {
                 {
                     "company": "Changed",
                     "position": "Changed Role",
-                    "status": "OFFER"
+                    "status": "OFFER",
+                    "applicationDate": "2026-08-30"
                 }
                 """;
 
@@ -166,7 +170,8 @@ class JobApplicationControllerTest {
                 {
                     "company": "Microsoft",
                     "position": "Junior Java Developer",
-                    "status": "APPLIED"
+                    "status": "APPLIED",
+                    "applicationDate": "2026-08-30"
                 }
                 """;
 
@@ -178,7 +183,8 @@ class JobApplicationControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.company").value("Microsoft"))
                 .andExpect(jsonPath("$.position").value("Junior Java Developer"))
-                .andExpect(jsonPath("$.status").value("APPLIED"));
+                .andExpect(jsonPath("$.status").value("APPLIED"))
+                .andExpect(jsonPath("$.applicationDate").value("2026-08-30"));
     }
 
     @Test
@@ -193,7 +199,8 @@ class JobApplicationControllerTest {
                 {
                     "company": "",
                     "position": "Junior Java Developer",
-                    "status": "APPLIED"
+                    "status": "APPLIED",
+                    "applicationDate": "2026-08-30"
                 }
                 """;
 
@@ -220,7 +227,8 @@ class JobApplicationControllerTest {
                 {
                     "company": "Microsoft",
                     "position": "Junior Java Developer",
-                    "status": "UNKNOWN"
+                    "status": "UNKNOWN",
+                    "applicationDate": "2026-08-30"
                 }
                 """;
 
@@ -274,7 +282,8 @@ class JobApplicationControllerTest {
                 {
                     "company": "Microsoft",
                     "position": "Backend Developer",
-                    "status": "INTERVIEW"
+                    "status": "INTERVIEW",
+                    "applicationDate": "2026-09-01"
                 }
                 """;
 
@@ -287,7 +296,8 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$.id").value(pedroApplication.getId()))
                 .andExpect(jsonPath("$.company").value("Microsoft"))
                 .andExpect(jsonPath("$.position").value("Backend Developer"))
-                .andExpect(jsonPath("$.status").value("INTERVIEW"));
+                .andExpect(jsonPath("$.status").value("INTERVIEW"))
+                .andExpect(jsonPath("$.applicationDate").value("2026-09-01"));
     }
 
     @Test
@@ -311,7 +321,8 @@ class JobApplicationControllerTest {
                 .andExpect(jsonPath("$.id").value(pedroApplication.getId()))
                 .andExpect(jsonPath("$.company").value("Microsoft"))
                 .andExpect(jsonPath("$.position").value("Junior Java Developer"))
-                .andExpect(jsonPath("$.status").value("APPLIED"));
+                .andExpect(jsonPath("$.status").value("APPLIED"))
+                .andExpect(jsonPath("$.applicationDate").value("2026-08-30"));
     }
 
     @Test
@@ -336,7 +347,8 @@ class JobApplicationControllerTest {
                 {
                     "company": "Microsoft",
                     "position": "Junior Java Developer",
-                    "status": "APPLIED"
+                    "status": "APPLIED",
+                    "applicationDate": "2026-08-30"
                 }
                 """;
 
@@ -353,7 +365,8 @@ class JobApplicationControllerTest {
                 {
                     "company": "Microsoft",
                     "position": "Backend Developer",
-                    "status": "INTERVIEW"
+                    "status": "INTERVIEW",
+                    "applicationDate": "2026-09-01"
                 }
                 """;
 
@@ -391,7 +404,8 @@ class JobApplicationControllerTest {
                 null,
                 company,
                 position,
-                status);
+                status,
+                LocalDate.parse("2026-08-30"));
 
         application.setOwner(owner);
 

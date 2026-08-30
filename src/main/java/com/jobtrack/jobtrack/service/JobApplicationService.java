@@ -16,109 +16,111 @@ import java.util.List;
 @Service
 public class JobApplicationService {
 
-    private final JobApplicationRepository repository;
-    private final UserAccountRepository userAccountRepository;
+        private final JobApplicationRepository repository;
+        private final UserAccountRepository userAccountRepository;
 
-    public JobApplicationService(
-            JobApplicationRepository repository,
-            UserAccountRepository userAccountRepository) {
+        public JobApplicationService(
+                        JobApplicationRepository repository,
+                        UserAccountRepository userAccountRepository) {
 
-        this.repository = repository;
-        this.userAccountRepository = userAccountRepository;
-    }
-
-    public List<JobApplicationResponse> getAllApplications(
-            String authenticatedEmail) {
-
-        List<JobApplication> applications = this.repository.findAllByOwner_Email(
-                authenticatedEmail);
-
-        List<JobApplicationResponse> responses = new ArrayList<>();
-
-        for (JobApplication application : applications) {
-            responses.add(this.toResponse(application));
+                this.repository = repository;
+                this.userAccountRepository = userAccountRepository;
         }
 
-        return responses;
-    }
+        public List<JobApplicationResponse> getAllApplications(
+                        String authenticatedEmail) {
 
-    public JobApplicationResponse addApplication(
-            JobApplicationRequest request,
-            String authenticatedEmail) {
+                List<JobApplication> applications = this.repository.findAllByOwner_Email(
+                                authenticatedEmail);
 
-        UserAccount owner = this.userAccountRepository
-                .findByEmail(authenticatedEmail)
-                .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+                List<JobApplicationResponse> responses = new ArrayList<>();
 
-        JobApplication application = new JobApplication(
-                null,
-                request.getCompany(),
-                request.getPosition(),
-                request.getStatus());
+                for (JobApplication application : applications) {
+                        responses.add(this.toResponse(application));
+                }
 
-        application.setOwner(owner);
+                return responses;
+        }
 
-        JobApplication savedApplication = this.repository.save(application);
+        public JobApplicationResponse addApplication(
+                        JobApplicationRequest request,
+                        String authenticatedEmail) {
 
-        return this.toResponse(savedApplication);
-    }
+                UserAccount owner = this.userAccountRepository
+                                .findByEmail(authenticatedEmail)
+                                .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
 
-    public JobApplicationResponse getApplicationById(
-            Long id,
-            String authenticatedEmail) {
+                JobApplication application = new JobApplication(
+                                null,
+                                request.getCompany(),
+                                request.getPosition(),
+                                request.getStatus(),
+                                request.getApplicationDate());
 
-        JobApplication application = this.findOwnedApplication(
-                id,
-                authenticatedEmail);
+                application.setOwner(owner);
 
-        return this.toResponse(application);
-    }
+                JobApplication savedApplication = this.repository.save(application);
 
-    public void deleteApplication(
-            Long id,
-            String authenticatedEmail) {
+                return this.toResponse(savedApplication);
+        }
 
-        JobApplication application = this.findOwnedApplication(
-                id,
-                authenticatedEmail);
+        public JobApplicationResponse getApplicationById(
+                        Long id,
+                        String authenticatedEmail) {
 
-        this.repository.delete(application);
-    }
+                JobApplication application = this.findOwnedApplication(
+                                id,
+                                authenticatedEmail);
 
-    public JobApplicationResponse updateApplication(
-            Long id,
-            JobApplicationRequest request,
-            String authenticatedEmail) {
-        JobApplication existingApplication = this.findOwnedApplication(id, authenticatedEmail);
+                return this.toResponse(application);
+        }
 
+        public void deleteApplication(
+                        Long id,
+                        String authenticatedEmail) {
 
-        existingApplication.setCompany(request.getCompany());
-        existingApplication.setPosition(request.getPosition());
-        existingApplication.setStatus(request.getStatus());
+                JobApplication application = this.findOwnedApplication(
+                                id,
+                                authenticatedEmail);
 
-        JobApplication savedApplication = this.repository.save(existingApplication);
+                this.repository.delete(application);
+        }
 
-        return this.toResponse(savedApplication);
-    }
+        public JobApplicationResponse updateApplication(
+                        Long id,
+                        JobApplicationRequest request,
+                        String authenticatedEmail) {
+                JobApplication existingApplication = this.findOwnedApplication(id, authenticatedEmail);
 
-    private JobApplication findOwnedApplication(
-            Long id,
-            String authenticatedEmail) {
+                existingApplication.setCompany(request.getCompany());
+                existingApplication.setPosition(request.getPosition());
+                existingApplication.setStatus(request.getStatus());
+                existingApplication.setApplicationDate(request.getApplicationDate());
 
-        return this.repository
-                .findByIdAndOwner_Email(
-                        id,
-                        authenticatedEmail)
-                .orElseThrow(() -> new JobApplicationNotFoundException(id));
-    }
+                JobApplication savedApplication = this.repository.save(existingApplication);
 
-    private JobApplicationResponse toResponse(
-            JobApplication application) {
+                return this.toResponse(savedApplication);
+        }
 
-        return new JobApplicationResponse(
-                application.getId(),
-                application.getCompany(),
-                application.getPosition(),
-                application.getStatus());
-    }
+        private JobApplication findOwnedApplication(
+                        Long id,
+                        String authenticatedEmail) {
+
+                return this.repository
+                                .findByIdAndOwner_Email(
+                                                id,
+                                                authenticatedEmail)
+                                .orElseThrow(() -> new JobApplicationNotFoundException(id));
+        }
+
+        private JobApplicationResponse toResponse(
+                        JobApplication application) {
+
+                return new JobApplicationResponse(
+                                application.getId(),
+                                application.getCompany(),
+                                application.getPosition(),
+                                application.getStatus(),
+                                application.getApplicationDate());
+        }
 }

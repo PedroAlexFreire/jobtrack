@@ -1,5 +1,7 @@
 package com.jobtrack.jobtrack.dto;
 
+import java.time.LocalDate;
+
 import com.jobtrack.jobtrack.model.ApplicationStatus;
 
 public class JobApplicationResponse {
@@ -8,17 +10,19 @@ public class JobApplicationResponse {
     private String company;
     private String position;
     private ApplicationStatus status;
+    private LocalDate applicationDate;
 
     public JobApplicationResponse(
             Long id,
             String company,
             String position,
-            ApplicationStatus status
-    ) {
+            ApplicationStatus status,
+            LocalDate applicationDate) {
         this.id = id;
         this.company = company;
         this.position = position;
         this.status = status;
+        this.applicationDate = applicationDate;
     }
 
     public Long getId() {
@@ -35,5 +39,9 @@ public class JobApplicationResponse {
 
     public ApplicationStatus getStatus() {
         return this.status;
+    }
+
+    public LocalDate getApplicationDate() {
+        return this.applicationDate;
     }
 }
