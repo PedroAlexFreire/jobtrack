@@ -174,6 +174,19 @@ GET /api/applications/{id}
 PUT /api/applications/{id}
 DELETE /api/applications/{id}
 
+```md
+The list endpoint can also be filtered by application status:
+
+```http
+GET /api/applications?status=INTERVIEW
+
+Available status values:
+
+APPLIED
+INTERVIEW
+OFFER
+REJECTED
+
 Example request body for creating or updating a job application:
 
 {
