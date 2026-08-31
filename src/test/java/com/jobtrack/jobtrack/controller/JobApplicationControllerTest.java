@@ -355,6 +355,39 @@ class JobApplicationControllerTest {
         }
 
         @Test
+        void updateApplicationReturnsBadRequestWhenApplicationDateIsMissing() throws Exception {
+                UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
+
+                JobApplication pedroApplication = this.createApplication(
+                                pedro,
+                                "Microsoft",
+                                "Junior Java Developer",
+                                ApplicationStatus.APPLIED);
+
+                String accessToken = this.jwtService
+                                .generateToken("pedro@example.com")
+                                .getAccessToken();
+
+                String requestBody = """
+                                {
+                                    "company": "Microsoft",
+                                    "position": "Backend Developer",
+                                    "status": "INTERVIEW"
+                                }
+                                """;
+
+                this.mockMvc
+                                .perform(put("/api/applications/{id}", pedroApplication.getId())
+                                                .header("Authorization", "Bearer " + accessToken)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(requestBody))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.message").value("Validation failed"))
+                                .andExpect(jsonPath("$.errors.applicationDate").value("Application date is required"));
+        }
+
+        @Test
         void getApplicationByIdReturnsOwnedApplication() throws Exception {
                 UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
 
