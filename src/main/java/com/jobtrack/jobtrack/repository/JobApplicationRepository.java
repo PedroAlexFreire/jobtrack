@@ -9,9 +9,9 @@ import java.util.Optional;
 public interface JobApplicationRepository
                 extends JpaRepository<JobApplication, Long> {
 
-        List<JobApplication> findAllByOwner_Email(String email);
+        List<JobApplication> findAllByOwner_EmailOrderByApplicationDateDesc(String email);
 
-        List<JobApplication> findAllByOwner_EmailAndStatus(
+        List<JobApplication> findAllByOwner_EmailAndStatusOrderByApplicationDateDesc(
         String email,
         ApplicationStatus status);
 

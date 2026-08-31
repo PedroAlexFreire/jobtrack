@@ -47,8 +47,8 @@ class JobApplicationServiceTest {
                                                 ApplicationStatus.INTERVIEW,
                                                 LocalDate.parse("2026-08-31")));
 
-                when(repository.findAllByOwner_Email("pedro@example.com"))
-                                .thenReturn(storedApplications);
+                        when(repository.findAllByOwner_EmailOrderByApplicationDateDesc("pedro@example.com"))
+                                        .thenReturn(storedApplications);
 
                 List<JobApplicationResponse> result = service.getAllApplications(
                                 "pedro@example.com",

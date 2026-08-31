@@ -35,9 +35,10 @@ public class JobApplicationService {
                 List<JobApplication> applications;
 
                 if (status == null) {
-                        applications = this.repository.findAllByOwner_Email(authenticatedEmail);
+                        applications = this.repository
+                                        .findAllByOwner_EmailOrderByApplicationDateDesc(authenticatedEmail);
                 } else {
-                        applications = this.repository.findAllByOwner_EmailAndStatus(
+                        applications = this.repository.findAllByOwner_EmailAndStatusOrderByApplicationDateDesc(
                                         authenticatedEmail,
                                         status);
                 }

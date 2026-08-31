@@ -124,6 +124,39 @@ class JobApplicationControllerTest {
         }
 
         @Test
+        void getAllApplicationsReturnsApplicationsOrderedByApplicationDateDescending() throws Exception {
+                UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
+
+                this.createApplication(
+                                pedro,
+                                "Older Company",
+                                "Junior Java Developer",
+                                ApplicationStatus.APPLIED,
+                                LocalDate.parse("2026-08-10"));
+
+                this.createApplication(
+                                pedro,
+                                "Newer Company",
+                                "Backend Developer",
+                                ApplicationStatus.INTERVIEW,
+                                LocalDate.parse("2026-08-30"));
+
+                String accessToken = this.jwtService
+                                .generateToken("pedro@example.com")
+                                .getAccessToken();
+
+                this.mockMvc
+                                .perform(get("/api/applications")
+                                                .header("Authorization", "Bearer " + accessToken))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(2))
+                                .andExpect(jsonPath("$[0].company").value("Newer Company"))
+                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-30"))
+                                .andExpect(jsonPath("$[1].company").value("Older Company"))
+                                .andExpect(jsonPath("$[1].applicationDate").value("2026-08-10"));
+        }
+
+        @Test
         void getApplicationByIdReturnsNotFoundForAnotherUsersApplication() throws Exception {
                 this.createUser("Pedro", "pedro@example.com");
                 UserAccount ana = this.createUser("Ana", "ana@example.com");
@@ -526,12 +559,26 @@ class JobApplicationControllerTest {
                         String company,
                         String position,
                         ApplicationStatus status) {
+                return this.createApplication(
+                                owner,
+                                company,
+                                position,
+                                status,
+                                LocalDate.parse("2026-08-30"));
+        }
+
+        private JobApplication createApplication(
+                        UserAccount owner,
+                        String company,
+                        String position,
+                        ApplicationStatus status,
+                        LocalDate applicationDate) {
                 JobApplication application = new JobApplication(
                                 null,
                                 company,
                                 position,
                                 status,
-                                LocalDate.parse("2026-08-30"));
+                                applicationDate);
 
                 application.setOwner(owner);
 
