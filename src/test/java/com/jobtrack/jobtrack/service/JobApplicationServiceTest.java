@@ -50,7 +50,9 @@ class JobApplicationServiceTest {
                 when(repository.findAllByOwner_Email("pedro@example.com"))
                                 .thenReturn(storedApplications);
 
-                List<JobApplicationResponse> result = service.getAllApplications("pedro@example.com");
+                List<JobApplicationResponse> result = service.getAllApplications(
+                                "pedro@example.com",
+                                null);
 
                 assertEquals(2, result.size());
                 assertEquals(1L, result.get(0).getId());

@@ -78,6 +78,45 @@ class JobApplicationControllerTest {
         }
 
         @Test
+        void getAllApplicationsReturnsOnlyAuthenticatedUserApplicationsWithMatchingStatus() throws Exception {
+                UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
+                UserAccount ana = this.createUser("Ana", "ana@example.com");
+
+                this.createApplication(
+                                pedro,
+                                "Microsoft",
+                                "Junior Java Developer",
+                                ApplicationStatus.APPLIED);
+
+                this.createApplication(
+                                pedro,
+                                "Google",
+                                "Backend Developer",
+                                ApplicationStatus.INTERVIEW);
+
+                this.createApplication(
+                                ana,
+                                "Spotify",
+                                "Backend Developer",
+                                ApplicationStatus.INTERVIEW);
+
+                String accessToken = this.jwtService
+                                .generateToken("pedro@example.com")
+                                .getAccessToken();
+
+                this.mockMvc
+                                .perform(get("/api/applications")
+                                                .param("status", "INTERVIEW")
+                                                .header("Authorization", "Bearer " + accessToken))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1))
+                                .andExpect(jsonPath("$[0].company").value("Google"))
+                                .andExpect(jsonPath("$[0].position").value("Backend Developer"))
+                                .andExpect(jsonPath("$[0].status").value("INTERVIEW"))
+                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-30"));
+        }
+
+        @Test
         void getAllApplicationsReturnsUnauthorizedWithoutToken() throws Exception {
                 this.mockMvc
                                 .perform(get("/api/applications"))

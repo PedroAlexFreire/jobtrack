@@ -7,6 +7,7 @@ import com.jobtrack.jobtrack.repository.UserAccountRepository;
 import com.jobtrack.jobtrack.dto.JobApplicationRequest;
 import com.jobtrack.jobtrack.dto.JobApplicationResponse;
 import com.jobtrack.jobtrack.exception.JobApplicationNotFoundException;
+import com.jobtrack.jobtrack.model.ApplicationStatus;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
@@ -28,10 +29,18 @@ public class JobApplicationService {
         }
 
         public List<JobApplicationResponse> getAllApplications(
-                        String authenticatedEmail) {
+                        String authenticatedEmail,
+                        ApplicationStatus status) {
 
-                List<JobApplication> applications = this.repository.findAllByOwner_Email(
-                                authenticatedEmail);
+                List<JobApplication> applications;
+
+                if (status == null) {
+                        applications = this.repository.findAllByOwner_Email(authenticatedEmail);
+                } else {
+                        applications = this.repository.findAllByOwner_EmailAndStatus(
+                                        authenticatedEmail,
+                                        status);
+                }
 
                 List<JobApplicationResponse> responses = new ArrayList<>();
 

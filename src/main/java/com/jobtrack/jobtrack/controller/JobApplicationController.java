@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.security.core.Authentication;
 import com.jobtrack.jobtrack.dto.JobApplicationRequest;
 import com.jobtrack.jobtrack.dto.JobApplicationResponse;
+import com.jobtrack.jobtrack.model.ApplicationStatus;
+import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import jakarta.validation.Valid;
 
@@ -27,10 +29,12 @@ public class JobApplicationController {
 
         @GetMapping("/api/applications")
         public List<JobApplicationResponse> getAllApplications(
+                        @RequestParam(required = false) ApplicationStatus status,
                         Authentication authentication) {
 
                 return this.service.getAllApplications(
-                                authentication.getName());
+                                authentication.getName(),
+                                status);
         }
 
         @PostMapping("/api/applications")
