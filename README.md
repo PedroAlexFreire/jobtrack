@@ -12,7 +12,8 @@ Current functionality includes:
 * User authentication
 * JWT-based authentication
 * Protected API endpoints
-* Job application creation and retrieval
+* Job application CRUD operations
+* Application date tracking
 * Job application ownership per authenticated user
 * PostgreSQL persistence
 * Request validation
@@ -144,6 +145,8 @@ The project currently includes tests for:
 * Job application service
 * Authentication service
 * JWT service
+* Authentication controller
+* Job application controller
 * Spring application context
 
 ## API Overview
@@ -162,9 +165,27 @@ Authorization: Bearer <access-token>
 
 ### Job Applications
 
-Authenticated users can access their own job applications through the job application endpoints.
+Authenticated users can manage their own job applications through the following endpoints:
 
-The application ensures that job application data belongs to the authenticated user.
+```http
+GET /api/applications
+POST /api/applications
+GET /api/applications/{id}
+PUT /api/applications/{id}
+DELETE /api/applications/{id}
+
+Example request body for creating or updating a job application:
+
+{
+  "company": "Microsoft",
+  "position": "Junior Java Developer",
+  "status": "APPLIED",
+  "applicationDate": "2026-08-30"
+}
+
+applicationDate is required and must use ISO date format: yyyy-MM-dd.
+
+The application ensures that job application data belongs to the authenticated user
 
 ## Security
 
@@ -192,15 +213,12 @@ Changes are implemented and tested in their own branches before being merged int
 
 Planned improvements include:
 
-* Update job applications
-* Delete job applications
-* Additional filtering and search
-* Improved validation
-* More unit and integration tests
-* API documentation
+* Filtering job applications by status
+* Search by company or position
 * Pagination and sorting
 * Deployment
 * Further improvements to security and error handling
+* Frontend application
 
 ## Project Status
 
