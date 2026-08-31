@@ -187,6 +187,8 @@ INTERVIEW
 OFFER
 REJECTED
 
+Job applications are returned ordered by `applicationDate` descending, with the most recent applications first.
+
 Example request body for creating or updating a job application:
 
 {
