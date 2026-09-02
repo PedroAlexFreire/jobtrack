@@ -2,20 +2,25 @@ package com.jobtrack.jobtrack.repository;
 
 import com.jobtrack.jobtrack.model.ApplicationStatus;
 import com.jobtrack.jobtrack.model.JobApplication;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import java.util.List;
+
 import java.util.Optional;
 
 public interface JobApplicationRepository
                 extends JpaRepository<JobApplication, Long> {
 
-        List<JobApplication> findAllByOwner_EmailOrderByApplicationDateDesc(String email);
-
-        List<JobApplication> findAllByOwner_EmailAndStatusOrderByApplicationDateDesc(
+        Page<JobApplication> findAllByOwner_Email(
                         String email,
-                        ApplicationStatus status);
+                        Pageable pageable);
+
+        Page<JobApplication> findAllByOwner_EmailAndStatus(
+                        String email,
+                        ApplicationStatus status,
+                        Pageable pageable);
 
         Optional<JobApplication> findByIdAndOwner_Email(
                         Long id,
@@ -29,11 +34,11 @@ public interface JobApplicationRepository
                                 lower(application.company) like lower(concat('%', :search, '%'))
                                 or lower(application.position) like lower(concat('%', :search, '%'))
                           )
-                        order by application.applicationDate desc
                         """)
-        List<JobApplication> searchByOwnerEmailOrderByApplicationDateDesc(
+        Page<JobApplication> searchByOwnerEmail(
                         @Param("email") String email,
-                        @Param("search") String search);
+                        @Param("search") String search,
+                        Pageable pageable);
 
         @Query("""
                         select application
@@ -44,10 +49,10 @@ public interface JobApplicationRepository
                                 lower(application.company) like lower(concat('%', :search, '%'))
                                 or lower(application.position) like lower(concat('%', :search, '%'))
                           )
-                        order by application.applicationDate desc
                         """)
-        List<JobApplication> searchByOwnerEmailAndStatusOrderByApplicationDateDesc(
+        Page<JobApplication> searchByOwnerEmailAndStatus(
                         @Param("email") String email,
                         @Param("status") ApplicationStatus status,
-                        @Param("search") String search);
+                        @Param("search") String search,
+                        Pageable pageable);
 }

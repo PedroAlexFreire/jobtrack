@@ -70,11 +70,15 @@ class JobApplicationControllerTest {
                                 .perform(get("/api/applications")
                                                 .header("Authorization", "Bearer " + accessToken))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.length()").value(1))
-                                .andExpect(jsonPath("$[0].company").value("Microsoft"))
-                                .andExpect(jsonPath("$[0].position").value("Junior Java Developer"))
-                                .andExpect(jsonPath("$[0].status").value("APPLIED"))
-                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-30"));
+                                .andExpect(jsonPath("$.content.length()").value(1))
+                                .andExpect(jsonPath("$.content[0].company").value("Microsoft"))
+                                .andExpect(jsonPath("$.content[0].position").value("Junior Java Developer"))
+                                .andExpect(jsonPath("$.content[0].status").value("APPLIED"))
+                                .andExpect(jsonPath("$.content[0].applicationDate").value("2026-08-30"))
+                                .andExpect(jsonPath("$.page.totalElements").value(1))
+                                .andExpect(jsonPath("$.page.totalPages").value(1))
+                                .andExpect(jsonPath("$.page.number").value(0))
+                                .andExpect(jsonPath("$.page.size").value(20));
         }
 
         @Test
@@ -109,11 +113,11 @@ class JobApplicationControllerTest {
                                                 .param("status", "INTERVIEW")
                                                 .header("Authorization", "Bearer " + accessToken))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.length()").value(1))
-                                .andExpect(jsonPath("$[0].company").value("Google"))
-                                .andExpect(jsonPath("$[0].position").value("Backend Developer"))
-                                .andExpect(jsonPath("$[0].status").value("INTERVIEW"))
-                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-30"));
+                                .andExpect(jsonPath("$.content.length()").value(1))
+                                .andExpect(jsonPath("$.content[0].company").value("Google"))
+                                .andExpect(jsonPath("$.content[0].position").value("Backend Developer"))
+                                .andExpect(jsonPath("$.content[0].status").value("INTERVIEW"))
+                                .andExpect(jsonPath("$.content[0].applicationDate").value("2026-08-30"));
         }
 
         @Test
@@ -149,11 +153,11 @@ class JobApplicationControllerTest {
                                 .perform(get("/api/applications")
                                                 .header("Authorization", "Bearer " + accessToken))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.length()").value(2))
-                                .andExpect(jsonPath("$[0].company").value("Newer Company"))
-                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-30"))
-                                .andExpect(jsonPath("$[1].company").value("Older Company"))
-                                .andExpect(jsonPath("$[1].applicationDate").value("2026-08-10"));
+                                .andExpect(jsonPath("$.content.length()").value(2))
+                                .andExpect(jsonPath("$.content[0].company").value("Newer Company"))
+                                .andExpect(jsonPath("$.content[0].applicationDate").value("2026-08-30"))
+                                .andExpect(jsonPath("$.content[1].company").value("Older Company"))
+                                .andExpect(jsonPath("$.content[1].applicationDate").value("2026-08-10"));
         }
 
         @Test
@@ -191,10 +195,10 @@ class JobApplicationControllerTest {
                                                 .param("search", "java")
                                                 .header("Authorization", "Bearer " + accessToken))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.length()").value(1))
-                                .andExpect(jsonPath("$[0].company").value("Microsoft"))
-                                .andExpect(jsonPath("$[0].position").value("Junior Java Developer"))
-                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-30"));
+                                .andExpect(jsonPath("$.content.length()").value(1))
+                                .andExpect(jsonPath("$.content[0].company").value("Microsoft"))
+                                .andExpect(jsonPath("$.content[0].position").value("Junior Java Developer"))
+                                .andExpect(jsonPath("$.content[0].applicationDate").value("2026-08-30"));
         }
 
         @Test
@@ -240,11 +244,11 @@ class JobApplicationControllerTest {
                                                 .param("search", "backend")
                                                 .header("Authorization", "Bearer " + accessToken))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.length()").value(1))
-                                .andExpect(jsonPath("$[0].company").value("Google"))
-                                .andExpect(jsonPath("$[0].position").value("Backend Developer"))
-                                .andExpect(jsonPath("$[0].status").value("INTERVIEW"))
-                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-20"));
+                                .andExpect(jsonPath("$.content.length()").value(1))
+                                .andExpect(jsonPath("$.content[0].company").value("Google"))
+                                .andExpect(jsonPath("$.content[0].position").value("Backend Developer"))
+                                .andExpect(jsonPath("$.content[0].status").value("INTERVIEW"))
+                                .andExpect(jsonPath("$.content[0].applicationDate").value("2026-08-20"));
         }
 
         @Test
@@ -266,6 +270,49 @@ class JobApplicationControllerTest {
                                 .perform(get("/api/applications/{id}", anaApplication.getId())
                                                 .header("Authorization", "Bearer " + accessToken))
                                 .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void getAllApplicationsReturnsRequestedPageAndSize() throws Exception {
+                UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
+
+                this.createApplication(
+                                pedro,
+                                "Newest Company",
+                                "Backend Developer",
+                                ApplicationStatus.INTERVIEW,
+                                LocalDate.parse("2026-08-30"));
+
+                this.createApplication(
+                                pedro,
+                                "Middle Company",
+                                "Java Developer",
+                                ApplicationStatus.APPLIED,
+                                LocalDate.parse("2026-08-20"));
+
+                this.createApplication(
+                                pedro,
+                                "Oldest Company",
+                                "Junior Developer",
+                                ApplicationStatus.REJECTED,
+                                LocalDate.parse("2026-08-10"));
+
+                String accessToken = this.jwtService
+                                .generateToken("pedro@example.com")
+                                .getAccessToken();
+
+                this.mockMvc
+                                .perform(get("/api/applications")
+                                                .param("page", "1")
+                                                .param("size", "2")
+                                                .header("Authorization", "Bearer " + accessToken))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content.length()").value(1))
+                                .andExpect(jsonPath("$.content[0].company").value("Oldest Company"))
+                                .andExpect(jsonPath("$.page.totalElements").value(3))
+                                .andExpect(jsonPath("$.page.totalPages").value(2))
+                                .andExpect(jsonPath("$.page.number").value(1))
+                                .andExpect(jsonPath("$.page.size").value(2));
         }
 
         @Test

@@ -15,7 +15,10 @@ import com.jobtrack.jobtrack.dto.JobApplicationRequest;
 import com.jobtrack.jobtrack.dto.JobApplicationResponse;
 import com.jobtrack.jobtrack.model.ApplicationStatus;
 import org.springframework.web.bind.annotation.RequestParam;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,15 +31,17 @@ public class JobApplicationController {
         }
 
         @GetMapping("/api/applications")
-        public List<JobApplicationResponse> getAllApplications(
+        public Page<JobApplicationResponse> getAllApplications(
                         @RequestParam(required = false) ApplicationStatus status,
                         @RequestParam(required = false) String search,
+                        @PageableDefault(size = 20, sort = "applicationDate", direction = Sort.Direction.DESC) Pageable pageable,
                         Authentication authentication) {
 
                 return this.service.getAllApplications(
                                 authentication.getName(),
                                 status,
-                                search);
+                                search,
+                                pageable);
         }
 
         @PostMapping("/api/applications")

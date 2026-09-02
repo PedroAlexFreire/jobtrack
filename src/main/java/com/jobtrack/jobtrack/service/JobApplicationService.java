@@ -1,18 +1,16 @@
 package com.jobtrack.jobtrack.service;
 
-import com.jobtrack.jobtrack.model.JobApplication;
-import com.jobtrack.jobtrack.repository.JobApplicationRepository;
-import com.jobtrack.jobtrack.model.UserAccount;
-import com.jobtrack.jobtrack.repository.UserAccountRepository;
 import com.jobtrack.jobtrack.dto.JobApplicationRequest;
 import com.jobtrack.jobtrack.dto.JobApplicationResponse;
 import com.jobtrack.jobtrack.exception.JobApplicationNotFoundException;
 import com.jobtrack.jobtrack.model.ApplicationStatus;
-import java.util.ArrayList;
-
+import com.jobtrack.jobtrack.model.JobApplication;
+import com.jobtrack.jobtrack.model.UserAccount;
+import com.jobtrack.jobtrack.repository.JobApplicationRepository;
+import com.jobtrack.jobtrack.repository.UserAccountRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class JobApplicationService {
@@ -28,43 +26,39 @@ public class JobApplicationService {
                 this.userAccountRepository = userAccountRepository;
         }
 
-        public List<JobApplicationResponse> getAllApplications(
+        public Page<JobApplicationResponse> getAllApplications(
                         String authenticatedEmail,
                         ApplicationStatus status,
-                        String search) {
+                        String search,
+                        Pageable pageable) {
 
-                List<JobApplication> applications;
+                Page<JobApplication> applications;
 
                 boolean hasSearch = search != null && !search.isBlank();
 
                 if (status == null && !hasSearch) {
-                        applications = this.repository
-                                        .findAllByOwner_EmailOrderByApplicationDateDesc(authenticatedEmail);
+                        applications = this.repository.findAllByOwner_Email(
+                                        authenticatedEmail,
+                                        pageable);
                 } else if (status != null && !hasSearch) {
-                        applications = this.repository
-                                        .findAllByOwner_EmailAndStatusOrderByApplicationDateDesc(
-                                                        authenticatedEmail,
-                                                        status);
+                        applications = this.repository.findAllByOwner_EmailAndStatus(
+                                        authenticatedEmail,
+                                        status,
+                                        pageable);
                 } else if (status == null) {
-                        applications = this.repository
-                                        .searchByOwnerEmailOrderByApplicationDateDesc(
-                                                        authenticatedEmail,
-                                                        search.trim());
+                        applications = this.repository.searchByOwnerEmail(
+                                        authenticatedEmail,
+                                        search.trim(),
+                                        pageable);
                 } else {
-                        applications = this.repository
-                                        .searchByOwnerEmailAndStatusOrderByApplicationDateDesc(
-                                                        authenticatedEmail,
-                                                        status,
-                                                        search.trim());
+                        applications = this.repository.searchByOwnerEmailAndStatus(
+                                        authenticatedEmail,
+                                        status,
+                                        search.trim(),
+                                        pageable);
                 }
 
-                List<JobApplicationResponse> responses = new ArrayList<>();
-
-                for (JobApplication application : applications) {
-                        responses.add(this.toResponse(application));
-                }
-
-                return responses;
+                return applications.map(this::toResponse);
         }
 
         public JobApplicationResponse addApplication(
@@ -115,6 +109,7 @@ public class JobApplicationService {
                         Long id,
                         JobApplicationRequest request,
                         String authenticatedEmail) {
+
                 JobApplication existingApplication = this.findOwnedApplication(id, authenticatedEmail);
 
                 existingApplication.setCompany(request.getCompany());

@@ -8,6 +8,10 @@ import com.jobtrack.jobtrack.model.JobApplication;
 import com.jobtrack.jobtrack.repository.JobApplicationRepository;
 import com.jobtrack.jobtrack.repository.UserAccountRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,35 +37,44 @@ class JobApplicationServiceTest {
                                 repository,
                                 userAccountRepository);
 
-                List<JobApplication> storedApplications = List.of(
-                                new JobApplication(
-                                                1L,
-                                                "Microsoft",
-                                                "Junior Java Developer",
-                                                ApplicationStatus.APPLIED,
-                                                LocalDate.parse("2026-08-30")),
-                                new JobApplication(
-                                                2L,
-                                                "Spotify",
-                                                "Backend Developer",
-                                                ApplicationStatus.INTERVIEW,
-                                                LocalDate.parse("2026-08-31")));
+                Pageable pageable = PageRequest.of(0, 20);
 
-                when(repository.findAllByOwner_EmailOrderByApplicationDateDesc("pedro@example.com"))
+                Page<JobApplication> storedApplications = new PageImpl<>(
+                                List.of(
+                                                new JobApplication(
+                                                                1L,
+                                                                "Microsoft",
+                                                                "Junior Java Developer",
+                                                                ApplicationStatus.APPLIED,
+                                                                LocalDate.parse("2026-08-30")),
+                                                new JobApplication(
+                                                                2L,
+                                                                "Spotify",
+                                                                "Backend Developer",
+                                                                ApplicationStatus.INTERVIEW,
+                                                                LocalDate.parse("2026-08-31"))),
+                                pageable,
+                                2);
+
+                when(repository.findAllByOwner_Email(
+                                "pedro@example.com",
+                                pageable))
                                 .thenReturn(storedApplications);
 
-                List<JobApplicationResponse> result = service.getAllApplications(
+                Page<JobApplicationResponse> result = service.getAllApplications(
                                 "pedro@example.com",
                                 null,
-                                null);
+                                null,
+                                pageable);
 
-                assertEquals(2, result.size());
-                assertEquals(1L, result.get(0).getId());
-                assertEquals("Microsoft", result.get(0).getCompany());
-                assertEquals(LocalDate.parse("2026-08-30"), result.get(0).getApplicationDate());
-                assertEquals(2L, result.get(1).getId());
-                assertEquals("Spotify", result.get(1).getCompany());
-                assertEquals(LocalDate.parse("2026-08-31"), result.get(1).getApplicationDate());
+                assertEquals(2, result.getContent().size());
+                assertEquals(2, result.getTotalElements());
+                assertEquals(1L, result.getContent().get(0).getId());
+                assertEquals("Microsoft", result.getContent().get(0).getCompany());
+                assertEquals(LocalDate.parse("2026-08-30"), result.getContent().get(0).getApplicationDate());
+                assertEquals(2L, result.getContent().get(1).getId());
+                assertEquals("Spotify", result.getContent().get(1).getCompany());
+                assertEquals(LocalDate.parse("2026-08-31"), result.getContent().get(1).getApplicationDate());
         }
 
         @Test
