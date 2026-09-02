@@ -30,17 +30,32 @@ public class JobApplicationService {
 
         public List<JobApplicationResponse> getAllApplications(
                         String authenticatedEmail,
-                        ApplicationStatus status) {
+                        ApplicationStatus status,
+                        String search) {
 
                 List<JobApplication> applications;
 
-                if (status == null) {
+                boolean hasSearch = search != null && !search.isBlank();
+
+                if (status == null && !hasSearch) {
                         applications = this.repository
                                         .findAllByOwner_EmailOrderByApplicationDateDesc(authenticatedEmail);
+                } else if (status != null && !hasSearch) {
+                        applications = this.repository
+                                        .findAllByOwner_EmailAndStatusOrderByApplicationDateDesc(
+                                                        authenticatedEmail,
+                                                        status);
+                } else if (status == null) {
+                        applications = this.repository
+                                        .searchByOwnerEmailOrderByApplicationDateDesc(
+                                                        authenticatedEmail,
+                                                        search.trim());
                 } else {
-                        applications = this.repository.findAllByOwner_EmailAndStatusOrderByApplicationDateDesc(
-                                        authenticatedEmail,
-                                        status);
+                        applications = this.repository
+                                        .searchByOwnerEmailAndStatusOrderByApplicationDateDesc(
+                                                        authenticatedEmail,
+                                                        status,
+                                                        search.trim());
                 }
 
                 List<JobApplicationResponse> responses = new ArrayList<>();

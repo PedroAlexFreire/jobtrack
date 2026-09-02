@@ -157,6 +157,97 @@ class JobApplicationControllerTest {
         }
 
         @Test
+        void getAllApplicationsReturnsAuthenticatedUserApplicationsMatchingSearch() throws Exception {
+                UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
+                UserAccount ana = this.createUser("Ana", "ana@example.com");
+
+                this.createApplication(
+                                pedro,
+                                "Microsoft",
+                                "Junior Java Developer",
+                                ApplicationStatus.APPLIED,
+                                LocalDate.parse("2026-08-30"));
+
+                this.createApplication(
+                                pedro,
+                                "Google",
+                                "Backend Developer",
+                                ApplicationStatus.INTERVIEW,
+                                LocalDate.parse("2026-08-20"));
+
+                this.createApplication(
+                                ana,
+                                "JavaCorp",
+                                "Backend Developer",
+                                ApplicationStatus.INTERVIEW,
+                                LocalDate.parse("2026-08-31"));
+
+                String accessToken = this.jwtService
+                                .generateToken("pedro@example.com")
+                                .getAccessToken();
+
+                this.mockMvc
+                                .perform(get("/api/applications")
+                                                .param("search", "java")
+                                                .header("Authorization", "Bearer " + accessToken))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1))
+                                .andExpect(jsonPath("$[0].company").value("Microsoft"))
+                                .andExpect(jsonPath("$[0].position").value("Junior Java Developer"))
+                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-30"));
+        }
+
+        @Test
+        void getAllApplicationsReturnsAuthenticatedUserApplicationsMatchingStatusAndSearch() throws Exception {
+                UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
+                UserAccount ana = this.createUser("Ana", "ana@example.com");
+
+                this.createApplication(
+                                pedro,
+                                "Microsoft",
+                                "Junior Java Developer",
+                                ApplicationStatus.APPLIED,
+                                LocalDate.parse("2026-08-30"));
+
+                this.createApplication(
+                                pedro,
+                                "Google",
+                                "Backend Developer",
+                                ApplicationStatus.INTERVIEW,
+                                LocalDate.parse("2026-08-20"));
+
+                this.createApplication(
+                                pedro,
+                                "JavaCorp",
+                                "Backend Developer",
+                                ApplicationStatus.REJECTED,
+                                LocalDate.parse("2026-08-31"));
+
+                this.createApplication(
+                                ana,
+                                "JavaCorp",
+                                "Backend Developer",
+                                ApplicationStatus.INTERVIEW,
+                                LocalDate.parse("2026-09-01"));
+
+                String accessToken = this.jwtService
+                                .generateToken("pedro@example.com")
+                                .getAccessToken();
+
+                this.mockMvc
+                                .perform(get("/api/applications")
+                                                .param("status", "INTERVIEW")
+                                                .param("search", "backend")
+                                                .header("Authorization", "Bearer " + accessToken))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1))
+                                .andExpect(jsonPath("$[0].company").value("Google"))
+                                .andExpect(jsonPath("$[0].position").value("Backend Developer"))
+                                .andExpect(jsonPath("$[0].status").value("INTERVIEW"))
+                                .andExpect(jsonPath("$[0].applicationDate").value("2026-08-20"));
+        }
+
+        @Test
         void getApplicationByIdReturnsNotFoundForAnotherUsersApplication() throws Exception {
                 this.createUser("Pedro", "pedro@example.com");
                 UserAccount ana = this.createUser("Ana", "ana@example.com");

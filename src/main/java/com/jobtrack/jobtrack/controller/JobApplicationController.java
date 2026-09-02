@@ -30,11 +30,13 @@ public class JobApplicationController {
         @GetMapping("/api/applications")
         public List<JobApplicationResponse> getAllApplications(
                         @RequestParam(required = false) ApplicationStatus status,
+                        @RequestParam(required = false) String search,
                         Authentication authentication) {
 
                 return this.service.getAllApplications(
                                 authentication.getName(),
-                                status);
+                                status,
+                                search);
         }
 
         @PostMapping("/api/applications")
