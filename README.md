@@ -199,6 +199,31 @@ Search can be combined with status filtering:
 
 GET /api/applications?status=INTERVIEW&search=backend
 
+The list endpoint is paginated:
+
+```http
+GET /api/applications?page=0&size=10
+
+Paginated responses include the applications inside content and pagination metadata inside page:
+
+{
+  "content": [
+    {
+      "id": 1,
+      "company": "Microsoft",
+      "position": "Junior Java Developer",
+      "status": "APPLIED",
+      "applicationDate": "2026-08-30"
+    }
+  ],
+  "page": {
+    "size": 10,
+    "number": 0,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+
 
 Example request body for creating or updating a job application:
 
