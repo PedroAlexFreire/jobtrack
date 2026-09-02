@@ -316,6 +316,29 @@ class JobApplicationControllerTest {
         }
 
         @Test
+        void getAllApplicationsLimitsRequestedPageSize() throws Exception {
+                UserAccount pedro = this.createUser("Pedro", "pedro@example.com");
+
+                this.createApplication(
+                                pedro,
+                                "Company 1",
+                                "Developer",
+                                ApplicationStatus.APPLIED,
+                                LocalDate.parse("2026-08-30"));
+
+                String accessToken = this.jwtService
+                                .generateToken("pedro@example.com")
+                                .getAccessToken();
+
+                this.mockMvc
+                                .perform(get("/api/applications")
+                                                .param("size", "1000")
+                                                .header("Authorization", "Bearer " + accessToken))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.page.size").value(50));
+        }
+
+        @Test
         void deleteApplicationReturnsNotFoundForAnotherUsersApplication() throws Exception {
                 this.createUser("Pedro", "pedro@example.com");
                 UserAccount ana = this.createUser("Ana", "ana@example.com");
