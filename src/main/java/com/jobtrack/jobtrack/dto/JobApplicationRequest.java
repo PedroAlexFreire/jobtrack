@@ -17,6 +17,9 @@ public class JobApplicationRequest {
 
     @NotNull(message = "Status is required")
     private ApplicationStatus status;
+    
+    @NotNull(message = "Application date is required")
+    private LocalDate applicationDate;
 
     public JobApplicationRequest() {
     }
@@ -64,6 +67,4 @@ public class JobApplicationRequest {
         this.applicationDate = applicationDate;
     }
 
-    @NotNull(message = "Application date is required")
-    private LocalDate applicationDate;
 }
