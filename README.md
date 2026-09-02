@@ -15,12 +15,14 @@ Current functionality includes:
 * Job application CRUD operations
 * Application date tracking
 * Job application ownership per authenticated user
+* Filtering by application status
+* Search by company or position
+* Pagination and sorting
 * PostgreSQL persistence
 * Request validation
 * Centralized API error handling
 * Password hashing
-* Unit tests for service-layer logic
-* JWT generation tests
+* Unit and integration tests
 
 ## Tech Stack
 
@@ -78,6 +80,8 @@ JWT_SECRET=your_jwt_secret
 
 The `.env` file is ignored by Git and should not be committed.
 
+`JWT_SECRET` must be a valid Base64 value.
+
 The Spring configuration reads these values from environment variables:
 
 ```properties
@@ -87,6 +91,9 @@ spring.datasource.password=${POSTGRES_PASSWORD}
 
 security.jwt.secret=${JWT_SECRET}
 security.jwt.expiration-seconds=3600
+
+spring.data.web.pageable.max-page-size=50
+spring.data.web.pageable.serialization-mode=via_dto
 ```
 
 ## Running the Database
@@ -173,39 +180,61 @@ POST /api/applications
 GET /api/applications/{id}
 PUT /api/applications/{id}
 DELETE /api/applications/{id}
+```
 
-```md
-The list endpoint can also be filtered by application status:
+Example request body for creating or updating a job application:
 
-```http
-GET /api/applications?status=INTERVIEW
+```json
+{
+  "company": "Microsoft",
+  "position": "Junior Java Developer",
+  "status": "APPLIED",
+  "applicationDate": "2026-08-30"
+}
+```
+
+`applicationDate` is required and must use ISO date format: `yyyy-MM-dd`.
 
 Available status values:
 
+```text
 APPLIED
 INTERVIEW
 OFFER
 REJECTED
+```
 
-Job applications are returned ordered by `applicationDate` descending, with the most recent applications first.
+The list endpoint can be filtered by application status:
 
+```http
+GET /api/applications?status=INTERVIEW
+```
 
-The list endpoint can also search by company or position:
+The list endpoint can search by company or position:
 
 ```http
 GET /api/applications?search=java
+```
 
 Search can be combined with status filtering:
 
+```http
 GET /api/applications?status=INTERVIEW&search=backend
+```
+
+Job applications are returned ordered by `applicationDate` descending, with the most recent applications first.
 
 The list endpoint is paginated:
 
 ```http
 GET /api/applications?page=0&size=10
+```
 
-Paginated responses include the applications inside content and pagination metadata inside page:
+The maximum accepted page size is `50`.
 
+Paginated responses include the applications inside `content` and pagination metadata inside `page`:
+
+```json
 {
   "content": [
     {
@@ -223,20 +252,9 @@ Paginated responses include the applications inside content and pagination metad
     "totalPages": 1
   }
 }
+```
 
-
-Example request body for creating or updating a job application:
-
-{
-  "company": "Microsoft",
-  "position": "Junior Java Developer",
-  "status": "APPLIED",
-  "applicationDate": "2026-08-30"
-}
-
-applicationDate is required and must use ISO date format: yyyy-MM-dd.
-
-The application ensures that job application data belongs to the authenticated user
+The application ensures that job application data belongs to the authenticated user.
 
 ## Security
 
@@ -264,15 +282,14 @@ Changes are implemented and tested in their own branches before being merged int
 
 Planned improvements include:
 
-* Filtering job applications by status
-* Search by company or position
-* Pagination and sorting
-* Deployment
-* Further improvements to security and error handling
 * Frontend application
+* Deployment
+* API documentation refinements
+* Continuous integration
+* Further improvements to security and error handling
 
 ## Project Status
 
 JobTrack is currently under active development.
 
-The goal is to progressively evolve it into a complete backend portfolio project that demonstrates practical Java and Spring Boot development, API design, authentication, testing, database integration, and Git workflow.
+The goal is to progressively evolve it into a complete full-stack portfolio project that demonstrates practical Java and Spring Boot development, API design, authentication, testing, database integration, Git workflow, and frontend integration.
