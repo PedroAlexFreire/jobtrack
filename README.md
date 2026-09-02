@@ -189,6 +189,17 @@ REJECTED
 
 Job applications are returned ordered by `applicationDate` descending, with the most recent applications first.
 
+
+The list endpoint can also search by company or position:
+
+```http
+GET /api/applications?search=java
+
+Search can be combined with status filtering:
+
+GET /api/applications?status=INTERVIEW&search=backend
+
+
 Example request body for creating or updating a job application:
 
 {
