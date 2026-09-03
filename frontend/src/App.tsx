@@ -1,3 +1,5 @@
+import { useAuth } from './auth/AuthContext'
+import { LoginPage } from './pages/LoginPage'
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -40,6 +42,11 @@ const statusStyles = {
 }
 
 function App() {
+  const { isAuthenticated } = useAuth()
+
+  if (!isAuthenticated) {
+    return <LoginPage />
+  }
   return (
     <main className="min-h-screen bg-[#f5f7fb] text-slate-900">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl">
@@ -142,7 +149,7 @@ function App() {
                           <span
                             className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${statusStyles[
                               application.status as keyof typeof statusStyles
-                              ]
+                            ]
                               }`}
                           >
                             {application.status}
