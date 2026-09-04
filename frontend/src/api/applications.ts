@@ -1,9 +1,16 @@
-import { apiGet } from './apiClient'
+import { apiGet, apiPost } from './apiClient'
 import type {
   ApplicationStatus,
   JobApplication,
   PaginatedResponse,
 } from '../types/application'
+
+export type CreateApplicationRequest = {
+  company: string
+  position: string
+  status: ApplicationStatus
+  applicationDate: string
+}
 
 export type GetApplicationsParams = {
   token: string
@@ -29,4 +36,16 @@ export function getApplications({
       search,
     },
   })
+}
+export function createApplication(
+  token: string,
+  request: CreateApplicationRequest,
+) {
+  return apiPost<JobApplication, CreateApplicationRequest>(
+    '/api/applications',
+    request,
+    {
+      token,
+    },
+  )
 }

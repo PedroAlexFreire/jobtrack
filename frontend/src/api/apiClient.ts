@@ -34,6 +34,7 @@ export async function apiGet<T>(
 export async function apiPost<TResponse, TBody>(
     path: string,
     body: TBody,
+    options: RequestOptions = {},
 ): Promise<TResponse> {
     const url = new URL(path, API_BASE_URL)
 
@@ -41,6 +42,7 @@ export async function apiPost<TResponse, TBody>(
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
         },
         body: JSON.stringify(body),
     })
