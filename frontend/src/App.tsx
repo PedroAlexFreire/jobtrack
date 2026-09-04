@@ -1,5 +1,9 @@
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { getApplications } from './api/applications'
 import { useAuth } from './auth/AuthContext'
 import { LoginPage } from './pages/LoginPage'
+import type { ApplicationStatus } from './types/application'
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -10,31 +14,8 @@ import {
   Search,
 } from 'lucide-react'
 
-const applications = [
-  {
-    id: 1,
-    company: 'Microsoft',
-    position: 'Junior Java Developer',
-    status: 'APPLIED',
-    applicationDate: '2026-08-30',
-  },
-  {
-    id: 2,
-    company: 'Google',
-    position: 'Backend Developer',
-    status: 'INTERVIEW',
-    applicationDate: '2026-08-20',
-  },
-  {
-    id: 3,
-    company: 'Spotify',
-    position: 'Software Engineer Intern',
-    status: 'REJECTED',
-    applicationDate: '2026-08-10',
-  },
-]
 
-const statusStyles = {
+const statusStyles: Record<ApplicationStatus, string> = {
   APPLIED: 'border-sky-200 bg-sky-50 text-sky-700',
   INTERVIEW: 'border-amber-200 bg-amber-50 text-amber-700',
   OFFER: 'border-emerald-200 bg-emerald-50 text-emerald-700',
@@ -42,7 +23,31 @@ const statusStyles = {
 }
 
 function App() {
-  const { isAuthenticated } = useAuth()
+  const { accessToken, isAuthenticated } = useAuth()
+
+  const applicationsQuery = useQuery({
+    queryKey: ['applications'],
+    queryFn: () => getApplications({ token: accessToken! }),
+    enabled: accessToken !== null,
+  })
+
+  const applications = applicationsQuery.data?.content ?? []
+
+  const metrics = useMemo(
+    () => ({
+      total: applications.length,
+      interviews: applications.filter(
+        (application) => application.status === 'INTERVIEW',
+      ).length,
+      offers: applications.filter((application) => application.status === 'OFFER')
+        .length,
+      waiting: applications.filter(
+        (application) =>
+          application.status === 'APPLIED' || application.status === 'INTERVIEW',
+      ).length,
+    }),
+    [applications],
+  )
 
   if (!isAuthenticated) {
     return <LoginPage />
@@ -96,10 +101,26 @@ function App() {
           </header>
 
           <div className="grid gap-4 px-4 py-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-            <MetricCard label="Total" value="3" icon={<BriefcaseBusiness size={18} />} />
-            <MetricCard label="Interviews" value="1" icon={<CalendarDays size={18} />} />
-            <MetricCard label="Offers" value="0" icon={<CheckCircle2 size={18} />} />
-            <MetricCard label="Waiting" value="2" icon={<Clock3 size={18} />} />
+            <MetricCard
+              label="Total"
+              value={String(metrics.total)}
+              icon={<BriefcaseBusiness size={18} />}
+            />
+            <MetricCard
+              label="Interviews"
+              value={String(metrics.interviews)}
+              icon={<CalendarDays size={18} />}
+            />
+            <MetricCard
+              label="Offers"
+              value={String(metrics.offers)}
+              icon={<CheckCircle2 size={18} />}
+            />
+            <MetricCard
+              label="Waiting"
+              value={String(metrics.waiting)}
+              icon={<Clock3 size={18} />}
+            />
           </div>
 
           <section className="px-4 pb-8 sm:px-6 lg:px-8">
@@ -137,6 +158,32 @@ function App() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
+                    {applicationsQuery.isLoading && (
+                      <tr>
+                        <td className="px-4 py-6 text-sm text-slate-500" colSpan={4}>
+                          Loading applications...
+                        </td>
+                      </tr>
+                    )}
+
+                    {applicationsQuery.isError && (
+                      <tr>
+                        <td className="px-4 py-6 text-sm text-rose-600" colSpan={4}>
+                          Could not load applications.
+                        </td>
+                      </tr>
+                    )}
+
+                    {!applicationsQuery.isLoading &&
+                      !applicationsQuery.isError &&
+                      applications.length === 0 && (
+                        <tr>
+                          <td className="px-4 py-6 text-sm text-slate-500" colSpan={4}>
+                            No applications yet.
+                          </td>
+                        </tr>
+                      )}
+
                     {applications.map((application) => (
                       <tr key={application.id} className="hover:bg-slate-50">
                         <td className="px-4 py-4 text-sm font-medium text-slate-950">
@@ -165,7 +212,10 @@ function App() {
               </div>
 
               <footer className="flex items-center justify-between border-t border-slate-200 px-4 py-3 text-sm text-slate-500">
-                <span>Showing 3 of 3 applications</span>
+                <span>
+                  Showing {applications.length} of{' '}
+                  {applicationsQuery.data?.page.totalElements ?? applications.length} applications
+                </span>
                 <div className="flex items-center gap-2">
                   <button
                     className="rounded-md border border-slate-300 px-3 py-1.5 font-medium text-slate-600 disabled:opacity-50"
